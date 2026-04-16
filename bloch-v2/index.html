@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bloch Sphere Playground v2 — WebGPU</title>
+  <link rel="stylesheet" href="/src/styles.css">
+</head>
+<body>
+  <!-- 3-Panel Layout: Canvas (left), Controls (right), Code Editor (bottom) -->
+  <div id="app">
+    <!-- Top section: Canvas + Right Panel -->
+    <div id="top-section">
+      <!-- Left: WebGPU Canvas -->
+      <div id="canvas-wrap">
+        <canvas id="gpu-canvas"></canvas>
+        <!-- Tutorial bar overlays at bottom of canvas -->
+        <div id="tutorial-bar" class="tutorial-bar">
+          <div>
+            <div class="tutorial-step" id="tutorial-step"></div>
+            <div class="tutorial-text" id="tutorial-text"></div>
+          </div>
+          <div class="tutorial-nav">
+            <button class="btn-sm secondary" id="tutorial-prev">Back</button>
+            <button class="btn-sm" id="tutorial-next">Next</button>
+            <button class="btn-sm secondary" id="tutorial-close">&times;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Controls Panel (WebGPU Samples style) -->
+      <div id="right-panel">
+        <!-- Toolbar -->
+        <div class="toolbar">
+          <button class="toolbar-btn" id="btn-tutorial">Tutorial</button>
+          <button class="toolbar-btn" id="btn-recipes">Recipes</button>
+          <button class="toolbar-btn" id="btn-quiz">Quiz</button>
+          <button class="toolbar-btn" id="btn-qasm">QASM</button>
+          <button class="toolbar-btn" id="btn-save">Save</button>
+          <button class="toolbar-btn" id="btn-load">Load</button>
+          <button class="toolbar-btn" id="btn-share">Share</button>
+          <button class="toolbar-btn" id="btn-keys">?</button>
+        </div>
+
+        <!-- Scrollable controls -->
+        <div id="controls-scroll">
+          <!-- Qubits -->
+          <section class="ctrl-section">
+            <h3 class="ctrl-title">Qubits</h3>
+            <div class="qubit-tabs" id="qubit-tabs"></div>
+            <label class="toggle-row"><input type="checkbox" id="trail-toggle" checked> Show trail</label>
+          </section>
+
+          <!-- State Vector -->
+          <section class="ctrl-section">
+            <h3 class="ctrl-title">State Vector</h3>
+            <div id="state-display" class="state-box">|&psi;&rang; = |0&rang;</div>
+            <div id="bloch-coords" class="bloch-coords"></div>
+          </section>
+
+          <!-- Probabilities -->
+          <section class="ctrl-section">
+            <h3 class="ctrl-title">Probabilities</h3>
+            <div id="prob-bars" class="prob-bars"></div>
+          </section>
+
+          <!-- Single-Qubit Gates -->
+          <section class="ctrl-section">
+            <h3 class="ctrl-title">Single-Qubit Gates</h3>
+            <div class="gate-grid" id="single-gates"></div>
+          </section>
+
+          <!-- Rotation Gates -->
+          <section class="ctrl-section">
+            <h3 class="ctrl-title">Rotation Gates</h3>
+            <div class="rot-control">
+              <label>&theta;</label>
+              <input type="range" id="rot-angle" min="0" max="6.2832" step="0.01" value="1.5708">
+              <span id="rot-angle-val">&pi;/2</span>
+            </div>
+            <div class="gate-grid" id="rot-gates"></div>
+            <div id="custom-axis" style="display:none">
+              <div class="rot-control"><label>n<sub>x</sub></label><input type="range" id="axis-nx" min="-1" max="1" step="0.01" value="1"><span id="nx-val">1.00</span></div>
+              <div class="rot-control"><label>n<sub>y</sub></label><input type="range" id="axis-ny" min="-1" max="1" step="0.01" value="0"><span id="ny-val">0.00</span></div>
+              <div class="rot-control"><label>n<sub>z</sub></label><input type="range" id="axis-nz" min="-1" max="1" step="0.01" value="0"><span id="nz-val">0.00</span></div>
+            </div>
+          </section>
+
+          <!-- Entangling Gates -->
+          <section class="ctrl-section" id="entangling-section">
+            <h3 class="ctrl-title">Entangling Gates</h3>
+            <div class="target-sel">
+              <span>Ctrl:</span><select id="ctrl-qubit"></select>
+              <span>Tgt:</span><select id="tgt-qubit"></select>
+            </div>
+            <div class="gate-grid" id="ent-gates"></div>
+          </section>
+
+          <!-- History -->
+          <section class="ctrl-section">
+            <h3 class="ctrl-title">Gate History</h3>
+            <div id="gate-history" class="gate-history"></div>
+            <div class="action-row">
+              <button class="action-btn" id="btn-undo">&#x21A9; Undo</button>
+              <button class="action-btn" id="btn-reset">&#x27F2; Reset</button>
+              <button class="action-btn" id="btn-random">&#x2684; Random</button>
+            </div>
+          </section>
+
+          <!-- Measurement -->
+          <section class="ctrl-section">
+            <h3 class="ctrl-title">Measurement</h3>
+            <div class="action-row">
+              <button class="action-btn" id="btn-mz" style="flex:2">Measure Z</button>
+              <button class="action-btn" id="btn-mx">M<sub>x</sub></button>
+              <button class="action-btn" id="btn-my">M<sub>y</sub></button>
+            </div>
+            <div id="measure-result" class="measure-result"></div>
+          </section>
+
+          <!-- Observables -->
+          <section class="ctrl-section">
+            <h3 class="ctrl-title">Observables</h3>
+            <div class="expect-grid">
+              <div class="expect-item"><div class="expect-label">&lang;X&rang;</div><div class="expect-val" id="exp-x">0</div></div>
+              <div class="expect-item"><div class="expect-label">&lang;Y&rang;</div><div class="expect-val" id="exp-y">0</div></div>
+              <div class="expect-item"><div class="expect-label">&lang;Z&rang;</div><div class="expect-val" id="exp-z">1</div></div>
+            </div>
+            <div class="fidelity-row">
+              <label>Fidelity to:</label>
+              <select id="fid-target">
+                <option value="0">|0&rang;</option>
+                <option value="1">|1&rang;</option>
+                <option value="+">|+&rang;</option>
+                <option value="-">|-&rang;</option>
+                <option value="+i">|+i&rang;</option>
+                <option value="-i">|-i&rang;</option>
+              </select>
+              <span id="fid-val" class="fid-val">1.000</span>
+            </div>
+          </section>
+
+          <!-- Density Matrix -->
+          <section class="ctrl-section">
+            <h3 class="ctrl-title">Density Matrix</h3>
+            <div id="density-matrix" class="density-grid"></div>
+          </section>
+
+          <!-- Circuit Diagram -->
+          <section class="ctrl-section">
+            <h3 class="ctrl-title">Circuit</h3>
+            <canvas id="circuit-canvas" height="100"></canvas>
+          </section>
+
+          <!-- Histogram -->
+          <section class="ctrl-section">
+            <h3 class="ctrl-title">Histogram</h3>
+            <canvas id="hist-canvas" height="100"></canvas>
+            <div class="hist-controls">
+              <label>Shots:</label>
+              <input type="number" id="hist-shots" value="1024" min="1" max="100000">
+              <button class="action-btn" id="btn-run-hist">Run</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom: Code Editor -->
+    <div id="bottom-panel"></div>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal-overlay" id="recipe-modal"><div class="modal-box"><button class="modal-close" id="recipe-close">&times;</button><h2 class="modal-title">Quantum Recipes</h2><div id="recipe-list"></div></div></div>
+  <div class="modal-overlay" id="quiz-modal"><div class="modal-box"><button class="modal-close" id="quiz-close">&times;</button><h2 class="modal-title">Quiz Mode</h2><div id="quiz-content"></div></div></div>
+  <div class="modal-overlay" id="qasm-modal"><div class="modal-box"><button class="modal-close" id="qasm-close">&times;</button><h2 class="modal-title">OpenQASM 2.0</h2><pre id="qasm-output" class="qasm-box"></pre><div class="action-row" style="margin-top:10px"><button class="action-btn" id="btn-copy-qasm">Copy</button></div></div></div>
+  <div class="modal-overlay" id="keys-modal"><div class="modal-box"><button class="modal-close" id="keys-close">&times;</button><h2 class="modal-title">Keyboard Shortcuts</h2><div id="keys-grid" class="shortcuts-grid"></div></div></div>
+
+  <div id="tooltip" class="tooltip"></div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
