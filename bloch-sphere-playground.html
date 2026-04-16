@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bloch Sphere Playground</title>
+<title>Bloch Sphere Playground v2</title>
 <style>
   :root {
     --bg: #0a0a0f;
@@ -14,8 +14,11 @@
     --accent: #6c5ce7;
     --accent2: #00cec9;
     --accent3: #fd79a8;
+    --accent4: #ffeaa7;
     --gate-bg: #1a1a2e;
     --gate-hover: #2a2a4e;
+    --success: #00b894;
+    --danger: #d63031;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -39,8 +42,8 @@
 
   /* --- Side Panel --- */
   #panel {
-    width: 340px;
-    min-width: 340px;
+    width: 370px;
+    min-width: 370px;
     background: var(--panel);
     border-left: 1px solid var(--border);
     display: flex;
@@ -51,7 +54,7 @@
   }
 
   .section {
-    padding: 16px 18px;
+    padding: 14px 16px;
     border-bottom: 1px solid var(--border);
   }
 
@@ -61,26 +64,43 @@
     text-transform: uppercase;
     letter-spacing: 1.2px;
     color: var(--dim);
-    margin-bottom: 12px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
+
+  .section-title .toggle-btn {
+    font-size: 10px;
+    background: none;
+    border: none;
+    color: var(--accent);
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .section-title .toggle-btn:hover { background: var(--gate-bg); }
+
+  .section.collapsed .section-body { display: none; }
 
   /* --- State Display --- */
   #state-display {
     font-family: 'Courier New', monospace;
-    font-size: 15px;
+    font-size: 14px;
     line-height: 1.8;
     color: var(--accent2);
     background: rgba(0,206,201,0.06);
     border-radius: 8px;
-    padding: 12px 14px;
+    padding: 10px 12px;
     border: 1px solid rgba(0,206,201,0.15);
+    word-break: break-all;
   }
 
   #bloch-coords {
     font-family: 'Courier New', monospace;
-    font-size: 13px;
+    font-size: 12px;
     color: var(--dim);
-    margin-top: 8px;
+    margin-top: 6px;
     line-height: 1.6;
   }
 
@@ -88,7 +108,7 @@
   .gate-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
+    gap: 5px;
   }
 
   .gate-btn {
@@ -97,9 +117,9 @@
     border-radius: 6px;
     color: var(--text);
     font-family: 'Courier New', monospace;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
-    padding: 10px 0;
+    padding: 8px 0;
     cursor: pointer;
     transition: all 0.15s;
     text-align: center;
@@ -110,26 +130,26 @@
     color: #fff;
     transform: translateY(-1px);
   }
-  .gate-btn:active {
-    transform: translateY(0);
-  }
+  .gate-btn:active { transform: translateY(0); }
   .gate-btn.pauli { color: #ff7675; }
   .gate-btn.phase { color: #74b9ff; }
   .gate-btn.hadamard { color: #ffeaa7; }
   .gate-btn.rotation { color: #a29bfe; }
+  .gate-btn.entangling { color: #55efc4; }
+  .gate-btn.disabled { opacity: 0.3; pointer-events: none; }
 
   /* --- Rotation Controls --- */
   .rotation-control {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-top: 8px;
+    gap: 8px;
+    margin-top: 6px;
   }
   .rotation-control label {
-    font-size: 13px;
+    font-size: 12px;
     font-family: 'Courier New', monospace;
     color: var(--dim);
-    min-width: 28px;
+    min-width: 24px;
   }
   .rotation-control input[type=range] {
     flex: 1;
@@ -137,63 +157,22 @@
     height: 4px;
   }
   .rotation-control .angle-val {
-    font-size: 12px;
+    font-size: 11px;
     font-family: 'Courier New', monospace;
     color: var(--accent);
-    min-width: 50px;
+    min-width: 44px;
     text-align: right;
   }
 
-  /* --- History --- */
-  #gate-history {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    max-height: 120px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-  }
-  .history-chip {
-    font-family: 'Courier New', monospace;
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 4px;
-    background: var(--gate-bg);
-    border: 1px solid var(--border);
-    color: var(--dim);
-  }
-
-  /* --- Action Buttons --- */
-  .action-row {
-    display: flex;
-    gap: 8px;
-    margin-top: 4px;
-  }
-  .action-btn {
-    flex: 1;
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    background: var(--gate-bg);
-    color: var(--dim);
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .action-btn:hover {
-    background: var(--gate-hover);
-    color: var(--text);
-    border-color: var(--accent);
-  }
-
-  /* --- Multi-Qubit Tabs --- */
+  /* --- Qubit Tabs --- */
   .qubit-tabs {
     display: flex;
     gap: 4px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
   }
   .qubit-tab {
-    padding: 6px 14px;
+    padding: 5px 12px;
     border-radius: 6px;
     border: 1px solid var(--border);
     background: var(--gate-bg);
@@ -207,11 +186,9 @@
     color: #fff;
     border-color: var(--accent);
   }
-  .qubit-tab:hover:not(.active) {
-    border-color: var(--accent);
-  }
+  .qubit-tab:hover:not(.active) { border-color: var(--accent); }
   .add-qubit-btn {
-    padding: 6px 10px;
+    padding: 5px 9px;
     border-radius: 6px;
     border: 1px dashed var(--border);
     background: transparent;
@@ -220,22 +197,389 @@
     cursor: pointer;
     transition: all 0.15s;
   }
-  .add-qubit-btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
+  .add-qubit-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* --- History --- */
+  #gate-history {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    max-height: 80px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+  .history-chip {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--gate-bg);
+    border: 1px solid var(--border);
+    color: var(--dim);
   }
 
-  /* --- Info bar at bottom --- */
-  #info-bar {
-    padding: 10px 18px;
+  /* --- Action Buttons --- */
+  .action-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .action-btn {
+    flex: 1;
+    padding: 7px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--gate-bg);
+    color: var(--dim);
     font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .action-btn:hover {
+    background: var(--gate-hover);
+    color: var(--text);
+    border-color: var(--accent);
+  }
+
+  /* --- Probability Bars --- */
+  .prob-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .prob-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+  }
+  .prob-label {
+    min-width: 30px;
+    color: var(--dim);
+    text-align: right;
+  }
+  .prob-bar-wrap {
+    flex: 1;
+    height: 14px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .prob-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+    background: var(--accent);
+  }
+  .prob-val {
+    min-width: 40px;
+    text-align: right;
+    color: var(--accent2);
+  }
+
+  /* --- Density Matrix --- */
+  .density-grid {
+    display: grid;
+    gap: 2px;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+  }
+  .density-cell {
+    padding: 3px 4px;
+    text-align: center;
+    background: rgba(108,92,231,0.08);
+    border-radius: 3px;
+    color: var(--accent);
+    border: 1px solid rgba(108,92,231,0.15);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .density-cell.diag {
+    background: rgba(108,92,231,0.15);
+    color: var(--accent2);
+  }
+
+  /* --- Circuit Diagram --- */
+  #circuit-canvas {
+    width: 100%;
+    height: 100px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+
+  /* --- Histogram --- */
+  #histogram-canvas {
+    width: 100%;
+    height: 100px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .histogram-controls {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-top: 6px;
+  }
+  .histogram-controls label {
+    font-size: 11px;
+    color: var(--dim);
+  }
+  .histogram-controls input {
+    width: 60px;
+    background: var(--gate-bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 11px;
+    font-family: 'Courier New', monospace;
+  }
+
+  /* --- Expectation Values --- */
+  .expect-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    text-align: center;
+  }
+  .expect-item {
+    background: rgba(0,0,0,0.2);
+    border-radius: 4px;
+    padding: 6px 4px;
+    border: 1px solid var(--border);
+  }
+  .expect-label { color: var(--dim); font-size: 10px; }
+  .expect-val { color: var(--accent2); font-size: 13px; margin-top: 2px; }
+
+  /* --- Fidelity --- */
+  .fidelity-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-top: 6px;
+  }
+  .fidelity-row select {
+    flex: 1;
+    background: var(--gate-bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+  .fidelity-val {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: var(--success);
+    min-width: 50px;
+    text-align: right;
+  }
+
+  /* --- Recipe / Quiz / Tutorial modals --- */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+  }
+  .modal-overlay.visible { display: flex; }
+  .modal-box {
+    background: var(--panel);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 520px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+  .modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--accent2);
+  }
+  .modal-close {
+    float: right;
+    background: none;
+    border: none;
+    color: var(--dim);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 4px;
+  }
+  .modal-close:hover { color: var(--text); }
+
+  /* --- Recipe list --- */
+  .recipe-item {
+    padding: 10px 12px;
+    background: var(--gate-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .recipe-item:hover { border-color: var(--accent); background: var(--gate-hover); }
+  .recipe-name { font-weight: 600; color: var(--accent2); font-size: 14px; }
+  .recipe-desc { color: var(--dim); font-size: 12px; margin-top: 4px; line-height: 1.4; }
+
+  /* --- Quiz --- */
+  .quiz-target {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: var(--accent3);
+    background: rgba(253,121,168,0.08);
+    border: 1px solid rgba(253,121,168,0.2);
+    border-radius: 6px;
+    padding: 10px;
+    margin: 10px 0;
+    text-align: center;
+  }
+  .quiz-score {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: var(--accent4);
+    margin-top: 8px;
+    text-align: center;
+  }
+
+  /* --- Tutorial overlay --- */
+  .tutorial-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 370px;
+    background: var(--panel);
+    border-top: 2px solid var(--accent);
+    padding: 16px 24px;
+    display: none;
+    align-items: center;
+    gap: 16px;
+    z-index: 150;
+  }
+  .tutorial-bar.visible { display: flex; }
+  .tutorial-text {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  .tutorial-text .highlight { color: var(--accent2); font-weight: 600; }
+  .tutorial-step {
+    font-size: 11px;
+    color: var(--dim);
+    margin-bottom: 4px;
+  }
+  .tutorial-nav {
+    display: flex;
+    gap: 8px;
+  }
+  .tutorial-nav button {
+    padding: 6px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tutorial-nav button.secondary {
+    background: transparent;
+    color: var(--accent);
+  }
+  .tutorial-nav button:hover { opacity: 0.85; }
+
+  /* --- Export/QASM box --- */
+  .qasm-box {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px;
+    color: var(--accent2);
+    max-height: 150px;
+    overflow-y: auto;
+    white-space: pre;
+    line-height: 1.4;
+    scrollbar-width: thin;
+  }
+
+  /* --- Keyboard Shortcuts panel --- */
+  .shortcuts-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 12px;
+    font-size: 11px;
+  }
+  .shortcut-key {
+    font-family: 'Courier New', monospace;
+    background: var(--gate-bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 6px;
+    color: var(--accent);
+    text-align: center;
+  }
+  .shortcut-desc { color: var(--dim); }
+
+  /* --- Toolbar at top of panel --- */
+  .toolbar {
+    display: flex;
+    gap: 4px;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .toolbar-btn {
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--gate-bg);
+    color: var(--dim);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .toolbar-btn:hover { border-color: var(--accent); color: var(--text); }
+  .toolbar-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* --- Trail toggle --- */
+  .trail-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--dim);
+  }
+  .trail-toggle input[type=checkbox] {
+    accent-color: var(--accent);
+  }
+
+  /* --- Info bar --- */
+  #info-bar {
+    padding: 8px 16px;
+    font-size: 10px;
     color: var(--dim);
     border-top: 1px solid var(--border);
     margin-top: auto;
     line-height: 1.5;
   }
 
-  /* --- Tooltip overlay --- */
+  /* --- Tooltip --- */
   #tooltip {
     position: fixed;
     background: #1e1e2e;
@@ -252,6 +596,24 @@
     line-height: 1.4;
   }
   #tooltip.visible { opacity: 1; }
+
+  /* Entangling gate target selector */
+  .target-selector {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+    align-items: center;
+    font-size: 11px;
+    color: var(--dim);
+  }
+  .target-selector select {
+    background: var(--gate-bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 11px;
+  }
 </style>
 </head>
 <body>
@@ -259,103 +621,263 @@
 <canvas id="gl-canvas"></canvas>
 
 <div id="panel">
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <button class="toolbar-btn" id="btn-tutorial" title="Start Tutorial">Tutorial</button>
+    <button class="toolbar-btn" id="btn-recipes" title="Quantum Recipes">Recipes</button>
+    <button class="toolbar-btn" id="btn-quiz" title="Quiz Mode">Quiz</button>
+    <button class="toolbar-btn" id="btn-qasm" title="Export OpenQASM">QASM</button>
+    <button class="toolbar-btn" id="btn-save" title="Save State">Save</button>
+    <button class="toolbar-btn" id="btn-load" title="Load State">Load</button>
+    <button class="toolbar-btn" id="btn-share" title="Copy Share URL">Share</button>
+    <button class="toolbar-btn" id="btn-shortcuts" title="Keyboard Shortcuts">Keys</button>
+  </div>
+
   <!-- Qubit Selector -->
   <div class="section">
     <div class="section-title">Qubits</div>
-    <div class="qubit-tabs" id="qubit-tabs">
-      <button class="qubit-tab active" data-idx="0">q₀</button>
-      <button class="add-qubit-btn" id="add-qubit" title="Add qubit (max 4)">+</button>
+    <div class="section-body">
+      <div class="qubit-tabs" id="qubit-tabs">
+        <button class="qubit-tab active" data-idx="0">q&#x2080;</button>
+        <button class="add-qubit-btn" id="add-qubit" title="Add qubit (max 4)">+</button>
+      </div>
+      <label class="trail-toggle">
+        <input type="checkbox" id="trail-toggle" checked> Show trajectory trail
+      </label>
     </div>
   </div>
 
   <!-- State Vector -->
   <div class="section">
     <div class="section-title">State Vector</div>
-    <div id="state-display">|ψ⟩ = |0⟩</div>
-    <div id="bloch-coords"></div>
+    <div class="section-body">
+      <div id="state-display">|&#x3C8;&#x27E9; = |0&#x27E9;</div>
+      <div id="bloch-coords"></div>
+    </div>
+  </div>
+
+  <!-- Probability Bars -->
+  <div class="section">
+    <div class="section-title">Probabilities</div>
+    <div class="section-body">
+      <div class="prob-bars" id="prob-bars"></div>
+    </div>
   </div>
 
   <!-- Standard Gates -->
   <div class="section">
-    <div class="section-title">Standard Gates</div>
-    <div class="gate-grid">
-      <button class="gate-btn pauli" data-gate="X" title="Pauli-X: bit flip">X</button>
-      <button class="gate-btn pauli" data-gate="Y" title="Pauli-Y: bit+phase flip">Y</button>
-      <button class="gate-btn pauli" data-gate="Z" title="Pauli-Z: phase flip">Z</button>
-      <button class="gate-btn hadamard" data-gate="H" title="Hadamard: superposition">H</button>
-      <button class="gate-btn phase" data-gate="S" title="S gate: π/2 phase">S</button>
-      <button class="gate-btn phase" data-gate="S†" title="S-dagger: -π/2 phase">S†</button>
-      <button class="gate-btn phase" data-gate="T" title="T gate: π/4 phase">T</button>
-      <button class="gate-btn phase" data-gate="T†" title="T-dagger: -π/4 phase">T†</button>
+    <div class="section-title">Single-Qubit Gates</div>
+    <div class="section-body">
+      <div class="gate-grid">
+        <button class="gate-btn pauli" data-gate="X" title="Pauli-X: bit flip">X</button>
+        <button class="gate-btn pauli" data-gate="Y" title="Pauli-Y: bit+phase flip">Y</button>
+        <button class="gate-btn pauli" data-gate="Z" title="Pauli-Z: phase flip">Z</button>
+        <button class="gate-btn hadamard" data-gate="H" title="Hadamard: superposition">H</button>
+        <button class="gate-btn phase" data-gate="S" title="S gate: pi/2 phase">S</button>
+        <button class="gate-btn phase" data-gate="Sd" title="S-dagger: -pi/2 phase">S&#x2020;</button>
+        <button class="gate-btn phase" data-gate="T" title="T gate: pi/4 phase">T</button>
+        <button class="gate-btn phase" data-gate="Td" title="T-dagger: -pi/4 phase">T&#x2020;</button>
+      </div>
     </div>
   </div>
 
   <!-- Rotation Gates -->
   <div class="section">
     <div class="section-title">Rotation Gates</div>
-    <div class="rotation-control">
-      <label>θ</label>
-      <input type="range" id="rot-angle" min="0" max="6.2832" step="0.01" value="1.5708">
-      <span class="angle-val" id="rot-angle-val">π/2</span>
-    </div>
-    <div class="gate-grid" style="margin-top:10px;">
-      <button class="gate-btn rotation" data-gate="Rx" title="Rotation about X-axis">Rₓ</button>
-      <button class="gate-btn rotation" data-gate="Ry" title="Rotation about Y-axis">Rᵧ</button>
-      <button class="gate-btn rotation" data-gate="Rz" title="Rotation about Z-axis">R_z</button>
-      <button class="gate-btn rotation" data-gate="Rn" title="Rotation about custom axis">Rₙ</button>
-    </div>
-    <div id="custom-axis" style="display:none; margin-top:10px;">
+    <div class="section-body">
       <div class="rotation-control">
-        <label>nₓ</label>
-        <input type="range" id="axis-nx" min="-1" max="1" step="0.01" value="1">
-        <span class="angle-val" id="nx-val">1.00</span>
+        <label>&#x3B8;</label>
+        <input type="range" id="rot-angle" min="0" max="6.2832" step="0.01" value="1.5708">
+        <span class="angle-val" id="rot-angle-val">&#x3C0;/2</span>
       </div>
-      <div class="rotation-control">
-        <label>nᵧ</label>
-        <input type="range" id="axis-ny" min="-1" max="1" step="0.01" value="0">
-        <span class="angle-val" id="ny-val">0.00</span>
+      <div class="gate-grid" style="margin-top:8px;">
+        <button class="gate-btn rotation" data-gate="Rx" title="Rotation about X-axis">R&#x2093;</button>
+        <button class="gate-btn rotation" data-gate="Ry" title="Rotation about Y-axis">R&#x1D67;</button>
+        <button class="gate-btn rotation" data-gate="Rz" title="Rotation about Z-axis">R&#x1D69;</button>
+        <button class="gate-btn rotation" data-gate="Rn" title="Rotation about custom axis">R&#x2099;</button>
       </div>
-      <div class="rotation-control">
-        <label>n_z</label>
-        <input type="range" id="axis-nz" min="-1" max="1" step="0.01" value="0">
-        <span class="angle-val" id="nz-val">0.00</span>
+      <div id="custom-axis" style="display:none; margin-top:8px;">
+        <div class="rotation-control">
+          <label>n&#x2093;</label>
+          <input type="range" id="axis-nx" min="-1" max="1" step="0.01" value="1">
+          <span class="angle-val" id="nx-val">1.00</span>
+        </div>
+        <div class="rotation-control">
+          <label>n&#x1D67;</label>
+          <input type="range" id="axis-ny" min="-1" max="1" step="0.01" value="0">
+          <span class="angle-val" id="ny-val">0.00</span>
+        </div>
+        <div class="rotation-control">
+          <label>n&#x1D69;</label>
+          <input type="range" id="axis-nz" min="-1" max="1" step="0.01" value="0">
+          <span class="angle-val" id="nz-val">0.00</span>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- History -->
+  <!-- Entangling Gates -->
+  <div class="section" id="entangling-section">
+    <div class="section-title">Entangling Gates</div>
+    <div class="section-body">
+      <div class="target-selector">
+        <span>Control:</span>
+        <select id="ctrl-qubit"></select>
+        <span>Target:</span>
+        <select id="tgt-qubit"></select>
+      </div>
+      <div class="gate-grid" style="margin-top:8px;">
+        <button class="gate-btn entangling" data-egate="CNOT" title="Controlled-NOT">CNOT</button>
+        <button class="gate-btn entangling" data-egate="CZ" title="Controlled-Z">CZ</button>
+        <button class="gate-btn entangling" data-egate="SWAP" title="SWAP qubits">SWAP</button>
+        <button class="gate-btn entangling" data-egate="CH" title="Controlled-H">CH</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gate History -->
   <div class="section">
     <div class="section-title">Gate History</div>
-    <div id="gate-history"></div>
-    <div class="action-row">
-      <button class="action-btn" id="btn-undo">↩ Undo</button>
-      <button class="action-btn" id="btn-reset">⟲ Reset</button>
-      <button class="action-btn" id="btn-random">⚄ Random</button>
+    <div class="section-body">
+      <div id="gate-history"></div>
+      <div class="action-row">
+        <button class="action-btn" id="btn-undo">&#x21A9; Undo</button>
+        <button class="action-btn" id="btn-reset">&#x27F2; Reset</button>
+        <button class="action-btn" id="btn-random">&#x2684; Random</button>
+      </div>
     </div>
   </div>
 
   <!-- Measurement -->
   <div class="section">
     <div class="section-title">Measurement</div>
-    <div class="action-row">
-      <button class="action-btn" id="btn-measure-z" style="flex:2">Measure Z-basis</button>
-      <button class="action-btn" id="btn-measure-x">Mₓ</button>
-      <button class="action-btn" id="btn-measure-y">Mᵧ</button>
+    <div class="section-body">
+      <div class="action-row">
+        <button class="action-btn" id="btn-measure-z" style="flex:2">Measure Z</button>
+        <button class="action-btn" id="btn-measure-x">M&#x2093;</button>
+        <button class="action-btn" id="btn-measure-y">M&#x1D67;</button>
+      </div>
+      <div id="measure-result" style="margin-top:6px; font-family:'Courier New',monospace; font-size:12px; color:var(--accent3); min-height:18px;"></div>
     </div>
-    <div id="measure-result" style="margin-top:8px; font-family:'Courier New',monospace; font-size:13px; color:var(--accent3); min-height:20px;"></div>
+  </div>
+
+  <!-- Expectation Values & Fidelity -->
+  <div class="section">
+    <div class="section-title">Observables</div>
+    <div class="section-body">
+      <div class="expect-grid" id="expect-grid">
+        <div class="expect-item"><div class="expect-label">&#x27E8;X&#x27E9;</div><div class="expect-val" id="exp-x">0</div></div>
+        <div class="expect-item"><div class="expect-label">&#x27E8;Y&#x27E9;</div><div class="expect-val" id="exp-y">0</div></div>
+        <div class="expect-item"><div class="expect-label">&#x27E8;Z&#x27E9;</div><div class="expect-val" id="exp-z">1</div></div>
+      </div>
+      <div class="fidelity-row">
+        <label style="font-size:11px;color:var(--dim)">Fidelity to:</label>
+        <select id="fidelity-target">
+          <option value="0">|0&#x27E9;</option>
+          <option value="1">|1&#x27E9;</option>
+          <option value="+">|+&#x27E9;</option>
+          <option value="-">|-&#x27E9;</option>
+          <option value="+i">|+i&#x27E9;</option>
+          <option value="-i">|-i&#x27E9;</option>
+        </select>
+        <span class="fidelity-val" id="fidelity-val">1.000</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Density Matrix -->
+  <div class="section">
+    <div class="section-title">Density Matrix (Active Qubit)</div>
+    <div class="section-body">
+      <div class="density-grid" id="density-matrix" style="grid-template-columns: repeat(2, 1fr);"></div>
+    </div>
+  </div>
+
+  <!-- Circuit Diagram -->
+  <div class="section">
+    <div class="section-title">Circuit</div>
+    <div class="section-body">
+      <canvas id="circuit-canvas" height="100"></canvas>
+    </div>
+  </div>
+
+  <!-- Measurement Histogram -->
+  <div class="section">
+    <div class="section-title">Measurement Histogram</div>
+    <div class="section-body">
+      <canvas id="histogram-canvas" height="100"></canvas>
+      <div class="histogram-controls">
+        <label>Shots:</label>
+        <input type="number" id="hist-shots" value="1024" min="1" max="100000">
+        <button class="action-btn" id="btn-run-hist" style="flex:0 0 auto; padding:4px 12px;">Run</button>
+      </div>
+    </div>
   </div>
 
   <div id="info-bar">
-    Drag to rotate · Scroll to zoom · Click gates to apply<br>
-    Bloch Sphere Playground — WebGL
+    Drag to rotate &#xB7; Scroll to zoom &#xB7; Click gates to apply<br>
+    Keys: X Y Z H S T | U=undo R=reset M=measure<br>
+    Bloch Sphere Playground v2 &#x2014; WebGL
   </div>
 </div>
 
 <div id="tooltip"></div>
 
+<!-- Tutorial Bar -->
+<div class="tutorial-bar" id="tutorial-bar">
+  <div>
+    <div class="tutorial-step" id="tutorial-step">Step 1 of 8</div>
+    <div class="tutorial-text" id="tutorial-text"></div>
+  </div>
+  <div class="tutorial-nav">
+    <button class="secondary" id="tutorial-prev">Back</button>
+    <button id="tutorial-next">Next</button>
+    <button class="secondary" id="tutorial-close">&#x2715;</button>
+  </div>
+</div>
+
+<!-- Recipe Modal -->
+<div class="modal-overlay" id="recipe-modal">
+  <div class="modal-box">
+    <button class="modal-close" id="recipe-close">&#x2715;</button>
+    <div class="modal-title">Quantum Recipes</div>
+    <div id="recipe-list"></div>
+  </div>
+</div>
+
+<!-- Quiz Modal -->
+<div class="modal-overlay" id="quiz-modal">
+  <div class="modal-box">
+    <button class="modal-close" id="quiz-close">&#x2715;</button>
+    <div class="modal-title">Quiz Mode</div>
+    <div id="quiz-content"></div>
+  </div>
+</div>
+
+<!-- QASM Modal -->
+<div class="modal-overlay" id="qasm-modal">
+  <div class="modal-box">
+    <button class="modal-close" id="qasm-close">&#x2715;</button>
+    <div class="modal-title">OpenQASM 2.0 Export</div>
+    <div class="qasm-box" id="qasm-output"></div>
+    <div class="action-row" style="margin-top:10px;">
+      <button class="action-btn" id="btn-copy-qasm">Copy to Clipboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- Shortcuts Modal -->
+<div class="modal-overlay" id="shortcuts-modal">
+  <div class="modal-box">
+    <button class="modal-close" id="shortcuts-close">&#x2715;</button>
+    <div class="modal-title">Keyboard Shortcuts</div>
+    <div class="shortcuts-grid" id="shortcuts-grid"></div>
+  </div>
+</div>
+
 <script>
 // ============================================================
-// QUANTUM STATE ENGINE
+// COMPLEX NUMBER & LINEAR ALGEBRA
 // ============================================================
 class Complex {
   constructor(re = 0, im = 0) { this.re = re; this.im = im; }
@@ -377,27 +899,288 @@ class Complex {
 
 const C = (re, im=0) => new Complex(re, im);
 const ZERO = C(0); const ONE = C(1);
-const I = C(0, 1);
+const I_C = C(0, 1);
 const SQRT2_INV = C(1/Math.sqrt(2));
 
-// 2x2 matrix as [a,b,c,d] where M = [[a,b],[c,d]]
-function matMul2x2(M, v) {
-  return [
-    M[0].mul(v[0]).add(M[1].mul(v[1])),
-    M[2].mul(v[0]).add(M[3].mul(v[1]))
-  ];
+// ============================================================
+// MULTI-QUBIT STATE ENGINE
+// ============================================================
+// Full state vector for n qubits: 2^n amplitudes
+
+class QuantumState {
+  constructor(n = 1) {
+    this.n = n;
+    this.dim = 1 << n;
+    this.amps = new Array(this.dim).fill(null).map(() => C(0));
+    this.amps[0] = C(1); // |00...0>
+    this.history = [];           // [{gate, qubits, label}]
+    this.stateHistory = [this.copyAmps()];
+  }
+
+  copyAmps() { return this.amps.map(a => C(a.re, a.im)); }
+
+  addQubit() {
+    const newDim = this.dim * 2;
+    const newAmps = new Array(newDim).fill(null).map(() => C(0));
+    // tensor product with |0>
+    for (let i = 0; i < this.dim; i++) {
+      newAmps[i * 2] = C(this.amps[i].re, this.amps[i].im);
+    }
+    this.n++;
+    this.dim = newDim;
+    this.amps = newAmps;
+    this.stateHistory = [this.copyAmps()];
+    this.history = [];
+  }
+
+  normalize() {
+    let norm = 0;
+    for (let i = 0; i < this.dim; i++) norm += this.amps[i].abs2();
+    norm = Math.sqrt(norm);
+    if (norm > 1e-10) {
+      for (let i = 0; i < this.dim; i++) this.amps[i] = this.amps[i].scale(1/norm);
+    }
+  }
+
+  // Apply a 2x2 gate to qubit q (0-indexed, q=0 is MSB)
+  applySingleGate(matrix, q, label) {
+    const newAmps = new Array(this.dim).fill(null).map(() => C(0));
+    const bit = this.n - 1 - q; // bit position
+    const mask = 1 << bit;
+    for (let i = 0; i < this.dim; i++) {
+      if (i & mask) continue; // skip |1> states, process in pairs
+      const i0 = i;
+      const i1 = i | mask;
+      // matrix * [amp[i0], amp[i1]]
+      newAmps[i0] = matrix[0].mul(this.amps[i0]).add(matrix[1].mul(this.amps[i1]));
+      newAmps[i1] = matrix[2].mul(this.amps[i0]).add(matrix[3].mul(this.amps[i1]));
+    }
+    this.amps = newAmps;
+    this.normalize();
+    this.history.push({ gate: label, qubits: [q], type: 'single' });
+    this.stateHistory.push(this.copyAmps());
+  }
+
+  // Apply a 4x4 gate to qubits (control, target)
+  applyTwoQubitGate(matrix4x4, q1, q2, label) {
+    const newAmps = this.copyAmps();
+    const bit1 = this.n - 1 - q1;
+    const bit2 = this.n - 1 - q2;
+    const mask1 = 1 << bit1;
+    const mask2 = 1 << bit2;
+
+    // Iterate over all basis states
+    const visited = new Set();
+    for (let i = 0; i < this.dim; i++) {
+      // Extract the two-qubit sub-index
+      const b1 = (i >> bit1) & 1;
+      const b2 = (i >> bit2) & 1;
+      const subIdx = b1 * 2 + b2;
+
+      // Get the "base" index with both qubits set to 0
+      const base = i & ~mask1 & ~mask2;
+      if (visited.has(base)) continue;
+      visited.add(base);
+
+      // The four states of this two-qubit subspace
+      const idx00 = base;
+      const idx01 = base | mask2;
+      const idx10 = base | mask1;
+      const idx11 = base | mask1 | mask2;
+
+      const v = [this.amps[idx00], this.amps[idx01], this.amps[idx10], this.amps[idx11]];
+      for (let r = 0; r < 4; r++) {
+        let sum = C(0);
+        for (let c = 0; c < 4; c++) {
+          sum = sum.add(matrix4x4[r * 4 + c].mul(v[c]));
+        }
+        const targets = [idx00, idx01, idx10, idx11];
+        newAmps[targets[r]] = sum;
+      }
+    }
+    this.amps = newAmps;
+    this.normalize();
+    this.history.push({ gate: label, qubits: [q1, q2], type: 'two' });
+    this.stateHistory.push(this.copyAmps());
+  }
+
+  undo() {
+    if (this.stateHistory.length > 1) {
+      this.stateHistory.pop();
+      this.history.pop();
+      this.amps = this.copyFrom(this.stateHistory[this.stateHistory.length - 1]);
+    }
+  }
+
+  copyFrom(src) { return src.map(a => C(a.re, a.im)); }
+
+  reset() {
+    this.amps = new Array(this.dim).fill(null).map(() => C(0));
+    this.amps[0] = C(1);
+    this.history = [];
+    this.stateHistory = [this.copyAmps()];
+  }
+
+  // Partial trace to get single-qubit reduced density matrix
+  getReducedDensity(q) {
+    const bit = this.n - 1 - q;
+    const mask = 1 << bit;
+    let rho00 = C(0), rho01 = C(0), rho10 = C(0), rho11 = C(0);
+    for (let i = 0; i < this.dim; i++) {
+      if (i & mask) continue;
+      const i0 = i;
+      const i1 = i | mask;
+      rho00 = rho00.add(this.amps[i0].mul(this.amps[i0].conj()));
+      rho01 = rho01.add(this.amps[i0].mul(this.amps[i1].conj()));
+      rho10 = rho10.add(this.amps[i1].mul(this.amps[i0].conj()));
+      rho11 = rho11.add(this.amps[i1].mul(this.amps[i1].conj()));
+    }
+    return [rho00, rho01, rho10, rho11];
+  }
+
+  // Get Bloch sphere coordinates for qubit q
+  getBloch(q) {
+    const rho = this.getReducedDensity(q);
+    // x = 2*Re(rho01), y = 2*Im(rho01), z = Re(rho00) - Re(rho11)
+    // But for mixed states (entangled qubits), the Bloch vector is inside the sphere
+    return {
+      x: 2 * rho[1].re,  // rho01 + rho10 real part / rho01 real * 2
+      y: -2 * rho[1].im, // 2 * Im(rho10) = -2*Im(rho01)
+      z: rho[0].re - rho[3].re
+    };
+  }
+
+  // Get probabilities for each basis state
+  getProbs() {
+    return this.amps.map(a => a.abs2());
+  }
+
+  // Measure qubit q in Z basis
+  measureQubit(q, basis = 'z') {
+    const bit = this.n - 1 - q;
+    const mask = 1 << bit;
+
+    // For X and Y basis, first rotate then measure in Z
+    if (basis === 'x') {
+      // Hy before measure
+      this.applySingleGate(GATES.H, q, '');
+      this.history.pop(); this.stateHistory.pop(); // silent
+    } else if (basis === 'y') {
+      // S†H before measure
+      this.applySingleGate(GATES.Sd, q, '');
+      this.history.pop(); this.stateHistory.pop();
+      this.applySingleGate(GATES.H, q, '');
+      this.history.pop(); this.stateHistory.pop();
+    }
+
+    let prob0 = 0;
+    for (let i = 0; i < this.dim; i++) {
+      if (!(i & mask)) prob0 += this.amps[i].abs2();
+    }
+    const outcome = Math.random() < prob0 ? 0 : 1;
+
+    // Collapse
+    for (let i = 0; i < this.dim; i++) {
+      const bitVal = (i & mask) ? 1 : 0;
+      if (bitVal !== outcome) {
+        this.amps[i] = C(0);
+      }
+    }
+    this.normalize();
+
+    // Undo basis change
+    if (basis === 'x') {
+      this.applySingleGate(GATES.H, q, '');
+      this.history.pop(); this.stateHistory.pop();
+    } else if (basis === 'y') {
+      this.applySingleGate(GATES.H, q, '');
+      this.history.pop(); this.stateHistory.pop();
+      this.applySingleGate(GATES.S, q, '');
+      this.history.pop(); this.stateHistory.pop();
+    }
+
+    const labels = basis === 'z' ? ['|0\u27E9','|1\u27E9'] : basis === 'x' ? ['|+\u27E9','|\u2212\u27E9'] : ['|+i\u27E9','|\u2212i\u27E9'];
+    this.history.push({ gate: `M${basis}\u2192${labels[outcome]}`, qubits: [q], type: 'measure' });
+    this.stateHistory.push(this.copyAmps());
+
+    return { outcome, label: labels[outcome], prob: outcome === 0 ? prob0 : 1-prob0 };
+  }
+
+  // Simulate N measurements without collapsing (for histogram)
+  simulateMeasurements(shots) {
+    const probs = this.getProbs();
+    const counts = new Array(this.dim).fill(0);
+    for (let s = 0; s < shots; s++) {
+      let r = Math.random();
+      for (let i = 0; i < this.dim; i++) {
+        r -= probs[i];
+        if (r <= 0) { counts[i]++; break; }
+      }
+      if (r > 0) counts[this.dim - 1]++; // floating point safety
+    }
+    return counts;
+  }
+
+  // Expectation value of Pauli on qubit q
+  expectation(pauli, q) {
+    const b = this.getBloch(q);
+    if (pauli === 'X') return b.x;
+    if (pauli === 'Y') return b.y;
+    if (pauli === 'Z') return b.z;
+    return 0;
+  }
+
+  // Fidelity of qubit q to a target single-qubit state
+  fidelityTo(q, targetState) {
+    const rho = this.getReducedDensity(q);
+    // F = <target|rho|target>
+    const a = targetState[0], b = targetState[1];
+    const f = a.conj().mul(rho[0].mul(a).add(rho[1].mul(b)))
+             .add(b.conj().mul(rho[2].mul(a).add(rho[3].mul(b))));
+    return Math.max(0, Math.min(1, f.re));
+  }
 }
 
-// Gate definitions
+// ============================================================
+// GATE DEFINITIONS
+// ============================================================
 const GATES = {
   X:  [ZERO, ONE, ONE, ZERO],
   Y:  [ZERO, C(0,-1), C(0,1), ZERO],
   Z:  [ONE, ZERO, ZERO, C(-1)],
   H:  [SQRT2_INV, SQRT2_INV, SQRT2_INV, SQRT2_INV.scale(-1)],
-  S:  [ONE, ZERO, ZERO, I],
-  'S†': [ONE, ZERO, ZERO, C(0,-1)],
+  S:  [ONE, ZERO, ZERO, I_C],
+  Sd: [ONE, ZERO, ZERO, C(0,-1)],
   T:  [ONE, ZERO, ZERO, C(Math.cos(Math.PI/4), Math.sin(Math.PI/4))],
-  'T†': [ONE, ZERO, ZERO, C(Math.cos(Math.PI/4), -Math.sin(Math.PI/4))],
+  Td: [ONE, ZERO, ZERO, C(Math.cos(Math.PI/4), -Math.sin(Math.PI/4))],
+};
+
+// Two-qubit gates as 4x4 matrices (basis order: |00>, |01>, |10>, |11>)
+const GATES2 = {
+  CNOT: [
+    ONE,ZERO,ZERO,ZERO,
+    ZERO,ONE,ZERO,ZERO,
+    ZERO,ZERO,ZERO,ONE,
+    ZERO,ZERO,ONE,ZERO
+  ],
+  CZ: [
+    ONE,ZERO,ZERO,ZERO,
+    ZERO,ONE,ZERO,ZERO,
+    ZERO,ZERO,ONE,ZERO,
+    ZERO,ZERO,ZERO,C(-1)
+  ],
+  SWAP: [
+    ONE,ZERO,ZERO,ZERO,
+    ZERO,ZERO,ONE,ZERO,
+    ZERO,ONE,ZERO,ZERO,
+    ZERO,ZERO,ZERO,ONE
+  ],
+  CH: [
+    ONE,ZERO,ZERO,ZERO,
+    ZERO,ONE,ZERO,ZERO,
+    ZERO,ZERO,SQRT2_INV,SQRT2_INV,
+    ZERO,ZERO,SQRT2_INV,SQRT2_INV.scale(-1)
+  ],
 };
 
 function rotationGate(axis, angle) {
@@ -405,28 +1188,14 @@ function rotationGate(axis, angle) {
   if (axis === 'x') return [C(c), C(0,-s), C(0,-s), C(c)];
   if (axis === 'y') return [C(c), C(-s), C(s), C(c)];
   if (axis === 'z') return [C(c,-s), ZERO, ZERO, C(c,s)];
-  // Arbitrary axis (nx,ny,nz)
   const {nx, ny, nz} = axis;
   const len = Math.sqrt(nx*nx + ny*ny + nz*nz);
-  if (len < 1e-10) return [ONE, ZERO, ZERO, ONE]; // identity
+  if (len < 1e-10) return [ONE, ZERO, ZERO, ONE];
   const ux = nx/len, uy = ny/len, uz = nz/len;
   return [
-    C(c, -s*uz),        C(-s*uy, -s*ux),
-    C(s*uy, -s*ux),     C(c, s*uz)
+    C(c, -s*uz), C(-s*uy, -s*ux),
+    C(s*uy, -s*ux), C(c, s*uz)
   ];
-}
-
-// Bloch sphere coordinates from state vector
-function stateToBloch(alpha, beta) {
-  // |psi> = alpha|0> + beta|1>
-  // We need global phase invariant representation
-  // x = 2 Re(alpha* beta), y = 2 Im(alpha* beta), z = |alpha|^2 - |beta|^2
-  const ab = alpha.conj().mul(beta);
-  return {
-    x: 2 * ab.re,
-    y: 2 * ab.im,
-    z: alpha.abs2() - beta.abs2()
-  };
 }
 
 function blochToThetaPhi(b) {
@@ -437,79 +1206,38 @@ function blochToThetaPhi(b) {
 }
 
 // ============================================================
-// QUBIT MANAGER
-// ============================================================
-class Qubit {
-  constructor(id) {
-    this.id = id;
-    this.state = [ONE, ZERO]; // |0⟩
-    this.history = [];
-    this.stateHistory = [[ONE, ZERO]];
-  }
-  applyGate(matrix, name) {
-    this.state = matMul2x2(matrix, this.state);
-    this.normalize();
-    this.history.push(name);
-    this.stateHistory.push([...this.state]);
-  }
-  normalize() {
-    const norm = Math.sqrt(this.state[0].abs2() + this.state[1].abs2());
-    if (norm > 1e-10) {
-      this.state[0] = this.state[0].scale(1/norm);
-      this.state[1] = this.state[1].scale(1/norm);
-    }
-  }
-  undo() {
-    if (this.stateHistory.length > 1) {
-      this.stateHistory.pop();
-      this.history.pop();
-      this.state = [...this.stateHistory[this.stateHistory.length - 1]];
-    }
-  }
-  reset() {
-    this.state = [ONE, ZERO];
-    this.history = [];
-    this.stateHistory = [[ONE, ZERO]];
-  }
-  getBloch() { return stateToBloch(this.state[0], this.state[1]); }
-  measure(basis = 'z') {
-    let prob0, resultState0, resultState1;
-    if (basis === 'z') {
-      prob0 = this.state[0].abs2();
-      resultState0 = [ONE, ZERO];
-      resultState1 = [ZERO, ONE];
-    } else if (basis === 'x') {
-      const plus = [SQRT2_INV, SQRT2_INV];
-      const minus = [SQRT2_INV, SQRT2_INV.scale(-1)];
-      prob0 = this.state[0].add(this.state[1]).abs2() / 2;
-      resultState0 = plus;
-      resultState1 = minus;
-    } else {
-      const yp = [SQRT2_INV, C(0, 1/Math.sqrt(2))];
-      const ym = [SQRT2_INV, C(0, -1/Math.sqrt(2))];
-      prob0 = this.state[0].add(this.state[1].mul(C(0,-1))).abs2() / 2;
-      resultState0 = yp;
-      resultState1 = ym;
-    }
-    const outcome = Math.random() < prob0 ? 0 : 1;
-    this.state = outcome === 0 ? [...resultState0] : [...resultState1];
-    const labels = basis === 'z' ? ['|0⟩','|1⟩'] : basis === 'x' ? ['|+⟩','|−⟩'] : ['|+i⟩','|−i⟩'];
-    this.history.push(`M${basis}→${labels[outcome]}`);
-    this.stateHistory.push([...this.state]);
-    return { outcome, label: labels[outcome], prob: outcome === 0 ? prob0 : 1-prob0 };
-  }
-}
-
-// ============================================================
 // APP STATE
 // ============================================================
-const qubits = [new Qubit(0)];
+let qState = new QuantumState(1);
 let activeQubit = 0;
 let animating = false;
 let animStart = null;
-let animFrom = null;
-let animTo = null;
-const ANIM_DURATION = 350; // ms
+let animFrom = {};    // per-qubit bloch before
+let animTo = {};      // per-qubit bloch after
+const ANIM_DURATION = 350;
+
+// Trajectory trail per qubit
+const MAX_TRAIL = 200;
+let trails = { 0: [] };
+let trailEnabled = true;
+
+// Quiz state
+let quizActive = false;
+let quizTarget = null;
+let quizTargetLabel = '';
+let quizGateCount = 0;
+
+// ============================================================
+// TARGET STATES (for fidelity)
+// ============================================================
+const TARGET_STATES = {
+  '0': [ONE, ZERO],
+  '1': [ZERO, ONE],
+  '+': [SQRT2_INV, SQRT2_INV],
+  '-': [SQRT2_INV, SQRT2_INV.scale(-1)],
+  '+i': [SQRT2_INV, C(0, 1/Math.sqrt(2))],
+  '-i': [SQRT2_INV, C(0, -1/Math.sqrt(2))],
+};
 
 // ============================================================
 // WEBGL RENDERER
@@ -518,17 +1246,12 @@ const canvas = document.getElementById('gl-canvas');
 const gl = canvas.getContext('webgl', { antialias: true, alpha: false });
 
 if (!gl) {
-  document.body.innerHTML = '<h1 style="color:white;padding:40px">WebGL not supported in this browser.</h1>';
+  document.body.innerHTML = '<h1 style="color:white;padding:40px">WebGL not supported.</h1>';
 }
 
-// Camera state
-let camTheta = 0.6;
-let camPhi = 0.8;
-let camDist = 3.5;
-let dragging = false;
-let lastMouse = { x: 0, y: 0 };
+let camTheta = 0.6, camPhi = 0.8, camDist = 3.5;
+let dragging = false, lastMouse = { x: 0, y: 0 };
 
-// Shader sources
 const VS_SOLID = `
   attribute vec3 aPos;
   attribute vec3 aNormal;
@@ -552,12 +1275,10 @@ const FS_SOLID = `
   void main() {
     vec3 n = normalize(vNormal);
     float diff = max(dot(n, normalize(uLightDir)), 0.0);
-    float amb = 0.25;
-    vec3 col = uColor * (amb + diff * 0.75);
+    vec3 col = uColor * (0.25 + diff * 0.75);
     gl_FragColor = vec4(col, uAlpha);
   }
 `;
-
 const VS_LINE = `
   attribute vec3 aPos;
   uniform mat4 uMVP;
@@ -577,15 +1298,10 @@ const FS_LINE = `
 
 function compileShader(src, type) {
   const s = gl.createShader(type);
-  gl.shaderSource(s, src);
-  gl.compileShader(s);
-  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-    console.error(gl.getShaderInfoLog(s));
-    return null;
-  }
+  gl.shaderSource(s, src); gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { console.error(gl.getShaderInfoLog(s)); return null; }
   return s;
 }
-
 function linkProgram(vs, fs, attribs) {
   const v = compileShader(vs, gl.VERTEX_SHADER);
   const f = compileShader(fs, gl.FRAGMENT_SHADER);
@@ -593,10 +1309,6 @@ function linkProgram(vs, fs, attribs) {
   gl.attachShader(p, v); gl.attachShader(p, f);
   attribs.forEach((a, i) => gl.bindAttribLocation(p, i, a));
   gl.linkProgram(p);
-  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
-    console.error(gl.getProgramInfoLog(p));
-    return null;
-  }
   return p;
 }
 
@@ -604,14 +1316,10 @@ const progSolid = linkProgram(VS_SOLID, FS_SOLID, ['aPos', 'aNormal']);
 const progLine = linkProgram(VS_LINE, FS_LINE, ['aPos']);
 
 const uLocs = {};
-['uMVP','uModel','uColor','uAlpha','uLightDir'].forEach(u => {
-  uLocs['solid_'+u] = gl.getUniformLocation(progSolid, u);
-});
-['uMVP','uColor','uAlpha'].forEach(u => {
-  uLocs['line_'+u] = gl.getUniformLocation(progLine, u);
-});
+['uMVP','uModel','uColor','uAlpha','uLightDir'].forEach(u => uLocs['solid_'+u] = gl.getUniformLocation(progSolid, u));
+['uMVP','uColor','uAlpha'].forEach(u => uLocs['line_'+u] = gl.getUniformLocation(progLine, u));
 
-// --- Geometry generation ---
+// --- Geometry ---
 function createSphereGeo(radius, slices, stacks) {
   const verts = [], normals = [], indices = [];
   for (let i = 0; i <= stacks; i++) {
@@ -625,16 +1333,13 @@ function createSphereGeo(radius, slices, stacks) {
       normals.push(x, y, z);
     }
   }
-  for (let i = 0; i < stacks; i++) {
+  for (let i = 0; i < stacks; i++)
     for (let j = 0; j < slices; j++) {
-      const a = i * (slices+1) + j;
-      const b = a + slices + 1;
+      const a = i * (slices+1) + j, b = a + slices + 1;
       indices.push(a, b, a+1, b, b+1, a+1);
     }
-  }
   return { verts: new Float32Array(verts), normals: new Float32Array(normals), indices: new Uint16Array(indices) };
 }
-
 function createCircleGeo(radius, segments) {
   const pts = [];
   for (let i = 0; i <= segments; i++) {
@@ -643,128 +1348,74 @@ function createCircleGeo(radius, segments) {
   }
   return new Float32Array(pts);
 }
-
 function createArrowGeo(from, to, headLen = 0.08) {
   const dx = to[0]-from[0], dy = to[1]-from[1], dz = to[2]-from[2];
   const len = Math.sqrt(dx*dx+dy*dy+dz*dz);
   const ux = dx/len, uy = dy/len, uz = dz/len;
   const shaft = [from[0],from[1],from[2], to[0]-ux*headLen,to[1]-uy*headLen,to[2]-uz*headLen];
-  // simple head as two extra lines
   let px, py, pz;
-  if (Math.abs(ux) < 0.9) { px=0; py=-uz; pz=uy; }
-  else { px=-uz; py=0; pz=ux; }
-  const plen = Math.sqrt(px*px+py*py+pz*pz);
-  px/=plen; py/=plen; pz/=plen;
+  if (Math.abs(ux) < 0.9) { px=0; py=-uz; pz=uy; } else { px=-uz; py=0; pz=ux; }
+  const plen = Math.sqrt(px*px+py*py+pz*pz); px/=plen; py/=plen; pz/=plen;
   const hb = [to[0]-ux*headLen, to[1]-uy*headLen, to[2]-uz*headLen];
   const hs = headLen * 0.4;
-  const h1 = [hb[0]+px*hs, hb[1]+py*hs, hb[2]+pz*hs];
-  const h2 = [hb[0]-px*hs, hb[1]-py*hs, hb[2]-pz*hs];
   return new Float32Array([
     ...shaft,
-    to[0],to[1],to[2], h1[0],h1[1],h1[2],
-    to[0],to[1],to[2], h2[0],h2[1],h2[2],
+    to[0],to[1],to[2], hb[0]+px*hs,hb[1]+py*hs,hb[2]+pz*hs,
+    to[0],to[1],to[2], hb[0]-px*hs,hb[1]-py*hs,hb[2]-pz*hs,
   ]);
 }
 
 const sphere = createSphereGeo(0.98, 48, 32);
-const sphereBuf = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, sphereBuf);
-gl.bufferData(gl.ARRAY_BUFFER, sphere.verts, gl.STATIC_DRAW);
-const sphereNormBuf = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, sphereNormBuf);
-gl.bufferData(gl.ARRAY_BUFFER, sphere.normals, gl.STATIC_DRAW);
-const sphereIdxBuf = gl.createBuffer();
-gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sphereIdxBuf);
-gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, sphere.indices, gl.STATIC_DRAW);
+const sphereBuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, sphereBuf); gl.bufferData(gl.ARRAY_BUFFER, sphere.verts, gl.STATIC_DRAW);
+const sphereNormBuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, sphereNormBuf); gl.bufferData(gl.ARRAY_BUFFER, sphere.normals, gl.STATIC_DRAW);
+const sphereIdxBuf = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sphereIdxBuf); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, sphere.indices, gl.STATIC_DRAW);
 const sphereIdxCount = sphere.indices.length;
-
-// Equator + meridians
 const circleXZ = createCircleGeo(1.0, 80);
-const circleBuf = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, circleBuf);
-gl.bufferData(gl.ARRAY_BUFFER, circleXZ, gl.STATIC_DRAW);
-
-// Axes
-const axisX = createArrowGeo([-1.3,0,0],[1.3,0,0]);
-const axisY = createArrowGeo([0,-1.3,0],[0,1.3,0]);
-const axisZ = createArrowGeo([0,0,-1.3],[0,0,1.3]);
+const circleBuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, circleBuf); gl.bufferData(gl.ARRAY_BUFFER, circleXZ, gl.STATIC_DRAW);
+const axisXBuf = makeLineBuf(createArrowGeo([-1.3,0,0],[1.3,0,0]));
+const axisYBuf = makeLineBuf(createArrowGeo([0,-1.3,0],[0,1.3,0]));
+const axisZBuf = makeLineBuf(createArrowGeo([0,0,-1.3],[0,0,1.3]));
+const dynBuf = gl.createBuffer();
 
 function makeLineBuf(data) {
-  const b = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, b);
-  gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+  const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
   return { buf: b, count: data.length / 3 };
 }
-const axisXBuf = makeLineBuf(axisX);
-const axisYBuf = makeLineBuf(axisY);
-const axisZBuf = makeLineBuf(axisZ);
-
-// Dynamic line buffer for state vector
-const dynBuf = gl.createBuffer();
 
 // --- Matrix math ---
 function mat4Perspective(fov, aspect, near, far) {
-  const f = 1 / Math.tan(fov/2);
-  const nf = 1 / (near - far);
-  return new Float32Array([
-    f/aspect,0,0,0, 0,f,0,0, 0,0,(far+near)*nf,-1, 0,0,2*far*near*nf,0
-  ]);
+  const f = 1/Math.tan(fov/2), nf = 1/(near-far);
+  return new Float32Array([f/aspect,0,0,0, 0,f,0,0, 0,0,(far+near)*nf,-1, 0,0,2*far*near*nf,0]);
 }
 function mat4LookAt(eye, center, up) {
-  const zx=eye[0]-center[0], zy=eye[1]-center[1], zz=eye[2]-center[2];
-  let len = Math.sqrt(zx*zx+zy*zy+zz*zz);
-  const fz=[zx/len,zy/len,zz/len];
-  const sx=up[1]*fz[2]-up[2]*fz[1], sy=up[2]*fz[0]-up[0]*fz[2], sz=up[0]*fz[1]-up[1]*fz[0];
-  len=Math.sqrt(sx*sx+sy*sy+sz*sz);
-  const fx=[sx/len,sy/len,sz/len];
-  const fu=[fz[1]*fx[2]-fz[2]*fx[1], fz[2]*fx[0]-fz[0]*fx[2], fz[0]*fx[1]-fz[1]*fx[0]];
+  const zx=eye[0]-center[0],zy=eye[1]-center[1],zz=eye[2]-center[2];
+  let len=Math.sqrt(zx*zx+zy*zy+zz*zz); const fz=[zx/len,zy/len,zz/len];
+  const sx=up[1]*fz[2]-up[2]*fz[1],sy=up[2]*fz[0]-up[0]*fz[2],sz=up[0]*fz[1]-up[1]*fz[0];
+  len=Math.sqrt(sx*sx+sy*sy+sz*sz); const fx=[sx/len,sy/len,sz/len];
+  const fu=[fz[1]*fx[2]-fz[2]*fx[1],fz[2]*fx[0]-fz[0]*fx[2],fz[0]*fx[1]-fz[1]*fx[0]];
   return new Float32Array([
-    fx[0],fu[0],fz[0],0,
-    fx[1],fu[1],fz[1],0,
-    fx[2],fu[2],fz[2],0,
+    fx[0],fu[0],fz[0],0, fx[1],fu[1],fz[1],0, fx[2],fu[2],fz[2],0,
     -(fx[0]*eye[0]+fx[1]*eye[1]+fx[2]*eye[2]),
     -(fu[0]*eye[0]+fu[1]*eye[1]+fu[2]*eye[2]),
     -(fz[0]*eye[0]+fz[1]*eye[1]+fz[2]*eye[2]),1
   ]);
 }
-function mat4Identity() {
-  return new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]);
-}
+function mat4Identity() { return new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]); }
 function mat4RotateX(m, a) {
-  const c=Math.cos(a), s=Math.sin(a);
-  const r = new Float32Array(16);
-  r[0]=1; r[5]=c; r[6]=s; r[9]=-s; r[10]=c; r[15]=1;
-  return mat4Mul(m, r);
-}
-function mat4RotateY(m, a) {
-  const c=Math.cos(a), s=Math.sin(a);
-  const r = new Float32Array(16);
-  r[0]=c; r[2]=-s; r[5]=1; r[8]=s; r[10]=c; r[15]=1;
-  return mat4Mul(m, r);
+  const c=Math.cos(a),s=Math.sin(a),r=new Float32Array(16);
+  r[0]=1;r[5]=c;r[6]=s;r[9]=-s;r[10]=c;r[15]=1; return mat4Mul(m,r);
 }
 function mat4RotateZ(m, a) {
-  const c=Math.cos(a), s=Math.sin(a);
-  const r = new Float32Array(16);
-  r[0]=c; r[1]=s; r[4]=-s; r[5]=c; r[10]=1; r[15]=1;
-  return mat4Mul(m, r);
+  const c=Math.cos(a),s=Math.sin(a),r=new Float32Array(16);
+  r[0]=c;r[1]=s;r[4]=-s;r[5]=c;r[10]=1;r[15]=1; return mat4Mul(m,r);
 }
 function mat4Mul(a, b) {
   const o = new Float32Array(16);
-  for (let i = 0; i < 4; i++)
-    for (let j = 0; j < 4; j++) {
-      let s = 0;
-      for (let k = 0; k < 4; k++) s += a[k*4+j] * b[i*4+k];
-      o[i*4+j] = s;
-    }
+  for (let i=0;i<4;i++) for (let j=0;j<4;j++) { let s=0; for (let k=0;k<4;k++) s+=a[k*4+j]*b[i*4+k]; o[i*4+j]=s; }
   return o;
 }
-function mat4Translate(x,y,z) {
-  const m = mat4Identity();
-  m[12]=x; m[13]=y; m[14]=z;
-  return m;
-}
 
-// --- Render helpers ---
+// --- Draw helpers ---
 function drawSphere(mvp, model, color, alpha) {
   gl.useProgram(progSolid);
   gl.uniformMatrix4fv(uLocs.solid_uMVP, false, mvp);
@@ -772,46 +1423,39 @@ function drawSphere(mvp, model, color, alpha) {
   gl.uniform3fv(uLocs.solid_uColor, color);
   gl.uniform1f(uLocs.solid_uAlpha, alpha);
   gl.uniform3fv(uLocs.solid_uLightDir, [0.5, 0.8, 0.6]);
-
   gl.bindBuffer(gl.ARRAY_BUFFER, sphereBuf);
-  gl.enableVertexAttribArray(0);
-  gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
   gl.bindBuffer(gl.ARRAY_BUFFER, sphereNormBuf);
-  gl.enableVertexAttribArray(1);
-  gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sphereIdxBuf);
   gl.drawElements(gl.TRIANGLES, sphereIdxCount, gl.UNSIGNED_SHORT, 0);
   gl.disableVertexAttribArray(1);
 }
-
 function drawLines(mvp, buf, count, color, alpha, mode = gl.LINES) {
   gl.useProgram(progLine);
   gl.uniformMatrix4fv(uLocs.line_uMVP, false, mvp);
   gl.uniform3fv(uLocs.line_uColor, color);
   gl.uniform1f(uLocs.line_uAlpha, alpha);
   gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-  gl.enableVertexAttribArray(0);
-  gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
   gl.drawArrays(mode, 0, count);
 }
-
 function drawCircle(mvp, color, alpha) {
   drawLines(mvp, circleBuf, circleXZ.length/3, color, alpha, gl.LINE_STRIP);
 }
-
 function drawDynamic(mvp, data, color, alpha, mode = gl.LINES) {
+  if (data.length === 0) return;
   gl.bindBuffer(gl.ARRAY_BUFFER, dynBuf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.DYNAMIC_DRAW);
   gl.useProgram(progLine);
   gl.uniformMatrix4fv(uLocs.line_uMVP, false, mvp);
   gl.uniform3fv(uLocs.line_uColor, color);
   gl.uniform1f(uLocs.line_uAlpha, alpha);
-  gl.enableVertexAttribArray(0);
-  gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
   gl.drawArrays(mode, 0, data.length / 3);
 }
 
-// --- Text rendering via 2D canvas overlay ---
+// --- Text overlay ---
 const textCanvas = document.createElement('canvas');
 textCanvas.style.cssText = 'position:fixed;top:0;left:0;pointer-events:none;z-index:10;';
 document.body.appendChild(textCanvas);
@@ -820,49 +1464,36 @@ const ctx2d = textCanvas.getContext('2d');
 function resizeAll() {
   const dpr = window.devicePixelRatio || 1;
   const rect = canvas.getBoundingClientRect();
-  canvas.width = rect.width * dpr;
-  canvas.height = rect.height * dpr;
-  textCanvas.width = window.innerWidth * dpr;
-  textCanvas.height = window.innerHeight * dpr;
-  textCanvas.style.width = window.innerWidth + 'px';
-  textCanvas.style.height = window.innerHeight + 'px';
+  canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
+  textCanvas.width = window.innerWidth * dpr; textCanvas.height = window.innerHeight * dpr;
+  textCanvas.style.width = window.innerWidth + 'px'; textCanvas.style.height = window.innerHeight + 'px';
   gl.viewport(0, 0, canvas.width, canvas.height);
 }
 window.addEventListener('resize', resizeAll);
 resizeAll();
 
 function project3Dto2D(mvp, point, canvasRect) {
-  const x = mvp[0]*point[0] + mvp[4]*point[1] + mvp[8]*point[2] + mvp[12];
-  const y = mvp[1]*point[0] + mvp[5]*point[1] + mvp[9]*point[2] + mvp[13];
-  const w = mvp[3]*point[0] + mvp[7]*point[1] + mvp[11]*point[2] + mvp[15];
-  const ndcX = x/w, ndcY = y/w;
+  const x = mvp[0]*point[0]+mvp[4]*point[1]+mvp[8]*point[2]+mvp[12];
+  const y = mvp[1]*point[0]+mvp[5]*point[1]+mvp[9]*point[2]+mvp[13];
+  const w = mvp[3]*point[0]+mvp[7]*point[1]+mvp[11]*point[2]+mvp[15];
   const dpr = window.devicePixelRatio || 1;
-  return {
-    x: (ndcX * 0.5 + 0.5) * canvasRect.width * dpr,
-    y: (1 - (ndcY * 0.5 + 0.5)) * canvasRect.height * dpr
-  };
+  return { x: (x/w*0.5+0.5)*canvasRect.width*dpr, y: (1-(y/w*0.5+0.5))*canvasRect.height*dpr };
 }
 
 function drawLabels(mvp, canvasRect) {
   const dpr = window.devicePixelRatio || 1;
   ctx2d.clearRect(0, 0, textCanvas.width, textCanvas.height);
   ctx2d.font = `${14*dpr}px "Courier New", monospace`;
-  ctx2d.textAlign = 'center';
-  ctx2d.textBaseline = 'middle';
-
+  ctx2d.textAlign = 'center'; ctx2d.textBaseline = 'middle';
   const labels = [
     { pos: [1.45,0,0], text: 'X', color: '#ff7675' },
     { pos: [-1.45,0,0], text: '-X', color: '#ff7675' },
-    { pos: [0,1.45,0], text: '|0⟩', color: '#dfe6e9' },
-    { pos: [0,-1.45,0], text: '|1⟩', color: '#dfe6e9' },
+    { pos: [0,1.45,0], text: '|0\u27E9', color: '#dfe6e9' },
+    { pos: [0,-1.45,0], text: '|1\u27E9', color: '#dfe6e9' },
     { pos: [0,0,1.45], text: 'Y', color: '#00cec9' },
     { pos: [0,0,-1.45], text: '-Y', color: '#00cec9' },
   ];
-
-  // Offset for canvas position
-  const ox = canvasRect.left * dpr;
-  const oy = canvasRect.top * dpr;
-
+  const ox = canvasRect.left * dpr, oy = canvasRect.top * dpr;
   labels.forEach(l => {
     const p = project3Dto2D(mvp, l.pos, canvasRect);
     ctx2d.fillStyle = l.color;
@@ -870,31 +1501,29 @@ function drawLabels(mvp, canvasRect) {
   });
 }
 
-// --- Main render ---
-function getBlochDisplay() {
-  const q = qubits[activeQubit];
-  let b;
-  if (animating && animFrom && animTo) {
+// --- Get animated bloch ---
+function getBlochDisplay(q) {
+  if (animating && animFrom[q] && animTo[q]) {
     const t = Math.min(1, (performance.now() - animStart) / ANIM_DURATION);
     const ease = t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2;
-    b = {
-      x: animFrom.x + (animTo.x - animFrom.x) * ease,
-      y: animFrom.y + (animTo.y - animFrom.y) * ease,
-      z: animFrom.z + (animTo.z - animFrom.z) * ease,
-    };
-    if (t >= 1) {
-      animating = false;
-      b = animTo;
-    }
-  } else {
-    b = q.getBloch();
+    const f = animFrom[q], to = animTo[q];
+    const b = { x: f.x+(to.x-f.x)*ease, y: f.y+(to.y-f.y)*ease, z: f.z+(to.z-f.z)*ease };
+    if (t >= 1) { animating = false; return to; }
+    return b;
   }
-  return b;
+  return qState.getBloch(q);
 }
+
+// --- Main render ---
+const QUBIT_COLORS = [
+  [0.42, 0.36, 0.91],
+  [0, 0.81, 0.79],
+  [0.99, 0.47, 0.66],
+  [1.0, 0.92, 0.65],
+];
 
 function render() {
   requestAnimationFrame(render);
-
   const rect = canvas.getBoundingClientRect();
   const aspect = rect.width / rect.height;
 
@@ -915,70 +1544,61 @@ function render() {
   const model = mat4Identity();
   const mvp = mat4Mul(vp, model);
 
-  // Sphere (transparent)
   gl.depthMask(false);
   drawSphere(mvp, model, [0.15, 0.15, 0.22], 0.3);
   gl.depthMask(true);
 
-  // Equator (XZ plane)
   drawCircle(mvp, [0.3, 0.3, 0.4], 0.5);
+  drawCircle(mat4Mul(vp, mat4RotateX(mat4Identity(), Math.PI/2)), [0.25, 0.25, 0.35], 0.3);
+  drawCircle(mat4Mul(vp, mat4RotateZ(mat4Identity(), Math.PI/2)), [0.25, 0.25, 0.35], 0.3);
 
-  // Meridian in XY plane
-  const meridianXY = mat4RotateZ(mat4Identity(), 0);
-  const mvpMeridianXY = mat4Mul(vp, mat4RotateX(mat4Identity(), Math.PI/2));
-  drawCircle(mvpMeridianXY, [0.25, 0.25, 0.35], 0.3);
-
-  // Meridian in YZ plane
-  const mvpMeridianYZ = mat4Mul(vp, mat4RotateZ(mat4Identity(), Math.PI/2));
-  drawCircle(mvpMeridianYZ, [0.25, 0.25, 0.35], 0.3);
-
-  // Axes
   drawLines(mvp, axisXBuf.buf, axisXBuf.count, [0.8, 0.3, 0.3], 0.7);
   drawLines(mvp, axisYBuf.buf, axisYBuf.count, [0.3, 0.8, 0.3], 0.7);
   drawLines(mvp, axisZBuf.buf, axisZBuf.count, [0.3, 0.5, 0.8], 0.7);
 
-  // State vectors for all qubits
-  const colors = [
-    [0.42, 0.36, 0.91], // accent purple
-    [0, 0.81, 0.79],    // teal
-    [0.99, 0.47, 0.66], // pink
-    [1.0, 0.92, 0.65],  // gold
-  ];
-
-  qubits.forEach((q, i) => {
-    let b;
-    if (i === activeQubit) {
-      b = getBlochDisplay();
-    } else {
-      b = q.getBloch();
-    }
-    const c = colors[i % colors.length];
+  for (let i = 0; i < qState.n; i++) {
+    const b = getBlochDisplay(i);
+    const c = QUBIT_COLORS[i % QUBIT_COLORS.length];
     const isActive = i === activeQubit;
     const alpha = isActive ? 1.0 : 0.4;
 
-    // State vector arrow (use dynamic buffer to avoid per-frame allocation)
+    // Trail
+    if (trailEnabled && trails[i] && trails[i].length > 1) {
+      const trailData = [];
+      for (let j = 0; j < trails[i].length - 1; j++) {
+        const t1 = trails[i][j], t2 = trails[i][j+1];
+        trailData.push(t1.x, t1.z, t1.y, t2.x, t2.z, t2.y);
+      }
+      const trailAlpha = isActive ? 0.5 : 0.15;
+      drawDynamic(mvp, trailData, c, trailAlpha, gl.LINES);
+    }
+
+    // State vector arrow
     const arrow = createArrowGeo([0,0,0], [b.x, b.z, b.y], 0.06);
     drawDynamic(mvp, Array.from(arrow), c, alpha, gl.LINES);
-
-    // Point at tip
     drawDynamic(mvp, [b.x, b.z, b.y], c, alpha, gl.POINTS);
 
-    // Shadow projection on equatorial plane
+    // Shadow on equatorial plane for active qubit
     if (isActive) {
       drawDynamic(mvp, [
-        0, 0, 0, b.x, 0, b.y,  // projection on equator
-        b.x, 0, b.y, b.x, b.z, b.y,  // vertical line
+        0, 0, 0, b.x, 0, b.y,
+        b.x, 0, b.y, b.x, b.z, b.y,
       ], c, 0.25, gl.LINES);
     }
-  });
 
-  // Trail arc for active qubit (light dotted feel)
-  const activeB = getBlochDisplay();
-  const tp = blochToThetaPhi(activeB);
+    // Record trail
+    if (!animating) {
+      const realB = qState.getBloch(i);
+      if (!trails[i]) trails[i] = [];
+      const last = trails[i][trails[i].length - 1];
+      if (!last || Math.abs(last.x-realB.x) > 0.001 || Math.abs(last.y-realB.y) > 0.001 || Math.abs(last.z-realB.z) > 0.001) {
+        trails[i].push({...realB});
+        if (trails[i].length > MAX_TRAIL) trails[i].shift();
+      }
+    }
+  }
 
-  // Labels
   drawLabels(mvp, rect);
-
   updateUI();
 }
 
@@ -995,12 +1615,12 @@ const rotAngleVal = document.getElementById('rot-angle-val');
 function formatAngle(rad) {
   const pi = Math.PI;
   const fracs = [
-    [1, 'π'], [0.5, 'π/2'], [0.25, 'π/4'], [0.75, '3π/4'],
-    [1/3, 'π/3'], [2/3, '2π/3'], [1/6, 'π/6'], [5/6, '5π/6'],
-    [2, '2π'], [1.5, '3π/2'],
+    [1,'pi'],[0.5,'pi/2'],[0.25,'pi/4'],[0.75,'3pi/4'],
+    [1/3,'pi/3'],[2/3,'2pi/3'],[1/6,'pi/6'],[5/6,'5pi/6'],
+    [2,'2pi'],[1.5,'3pi/2'],
   ];
   for (const [f, label] of fracs) {
-    if (Math.abs(rad - f*pi) < 0.02) return label;
+    if (Math.abs(rad - f*pi) < 0.02) return label.replace('pi','\u03C0');
   }
   return rad.toFixed(2);
 }
@@ -1009,58 +1629,152 @@ function formatComplex(c) {
   const r = c.re, i = c.im;
   const ar = Math.abs(r), ai = Math.abs(i);
   if (ar < 1e-6 && ai < 1e-6) return '0';
-  // Check for nice fractions
   const sqrt2inv = 1/Math.sqrt(2);
   const nice = (v) => {
     if (Math.abs(v - 1) < 1e-4) return '1';
     if (Math.abs(v + 1) < 1e-4) return '-1';
-    if (Math.abs(v - sqrt2inv) < 1e-4) return '1/√2';
-    if (Math.abs(v + sqrt2inv) < 1e-4) return '-1/√2';
+    if (Math.abs(v - sqrt2inv) < 1e-4) return '1/\u221A2';
+    if (Math.abs(v + sqrt2inv) < 1e-4) return '-1/\u221A2';
     if (Math.abs(v - 0.5) < 1e-4) return '1/2';
     if (Math.abs(v + 0.5) < 1e-4) return '-1/2';
     return v.toFixed(3);
   };
   if (ai < 1e-6) return nice(r);
   if (ar < 1e-6) return nice(i) + 'i';
-  const sign = i >= 0 ? '+' : '';
-  return nice(r) + sign + nice(i) + 'i';
+  return nice(r) + (i >= 0 ? '+' : '') + nice(i) + 'i';
 }
 
+function basisLabel(idx, n) {
+  return '|' + idx.toString(2).padStart(n, '0') + '\u27E9';
+}
+
+let lastUIUpdate = 0;
 function updateUI() {
-  const q = qubits[activeQubit];
-  const alpha = q.state[0], beta = q.state[1];
-  const a = formatComplex(alpha), b = formatComplex(beta);
+  const now = performance.now();
+  if (now - lastUIUpdate < 50) return; // throttle to 20fps for DOM
+  lastUIUpdate = now;
 
-  if (b === '0') stateDisp.textContent = `|ψ⟩ = ${a}|0⟩`;
-  else if (a === '0') stateDisp.textContent = `|ψ⟩ = ${b}|1⟩`;
-  else stateDisp.textContent = `|ψ⟩ = ${a}|0⟩ + ${b}|1⟩`;
+  const q = activeQubit;
 
-  const bl = q.getBloch();
+  // State vector (show full multi-qubit state)
+  const probs = qState.getProbs();
+  const terms = [];
+  for (let i = 0; i < qState.dim; i++) {
+    if (qState.amps[i].abs2() > 1e-8) {
+      const coeff = formatComplex(qState.amps[i]);
+      terms.push(`${coeff}${basisLabel(i, qState.n)}`);
+    }
+  }
+  stateDisp.textContent = '|\u03C8\u27E9 = ' + (terms.length > 0 ? terms.join(' + ') : '0');
+
+  // Bloch coordinates for active qubit
+  const bl = qState.getBloch(q);
   const tp = blochToThetaPhi(bl);
   blochCoords.innerHTML =
-    `⟨X⟩ = ${bl.x.toFixed(4)}  ⟨Y⟩ = ${bl.y.toFixed(4)}  ⟨Z⟩ = ${bl.z.toFixed(4)}<br>` +
-    `θ = ${formatAngle(tp.theta)}  φ = ${formatAngle(tp.phi)}`;
+    `q${'\u2080\u2081\u2082\u2083'[q]}: \u27E8X\u27E9=${bl.x.toFixed(3)} \u27E8Y\u27E9=${bl.y.toFixed(3)} \u27E8Z\u27E9=${bl.z.toFixed(3)}<br>` +
+    `\u03B8=${formatAngle(tp.theta)} \u03C6=${formatAngle(tp.phi)} r=${tp.r.toFixed(3)}`;
 
-  gateHistoryEl.innerHTML = q.history.map(g =>
-    `<span class="history-chip">${g}</span>`
+  // Gate history
+  gateHistoryEl.innerHTML = qState.history.map(h =>
+    `<span class="history-chip">${h.gate}${h.qubits.length > 1 ? '(' + h.qubits.join(',') + ')' : h.type !== 'measure' ? '[' + h.qubits[0] + ']' : ''}</span>`
   ).join('');
   gateHistoryEl.scrollTop = gateHistoryEl.scrollHeight;
+
+  // Probability bars
+  updateProbBars(probs);
+
+  // Expectation values
+  document.getElementById('exp-x').textContent = qState.expectation('X', q).toFixed(3);
+  document.getElementById('exp-y').textContent = qState.expectation('Y', q).toFixed(3);
+  document.getElementById('exp-z').textContent = qState.expectation('Z', q).toFixed(3);
+
+  // Fidelity
+  const fidTarget = document.getElementById('fidelity-target').value;
+  const fid = qState.fidelityTo(q, TARGET_STATES[fidTarget]);
+  document.getElementById('fidelity-val').textContent = fid.toFixed(4);
+  document.getElementById('fidelity-val').style.color = fid > 0.99 ? '#00b894' : fid > 0.5 ? '#ffeaa7' : '#d63031';
+
+  // Density matrix
+  updateDensityMatrix(q);
+
+  // Quiz check
+  if (quizActive) updateQuizScore();
 }
 
-function applyGateAnimated(gate, name) {
-  const q = qubits[activeQubit];
-  const fromBloch = q.getBloch();
-  q.applyGate(gate, name);
-  const toBloch = q.getBloch();
+function updateProbBars(probs) {
+  const el = document.getElementById('prob-bars');
+  const n = qState.n;
+  let html = '';
+  // For >3 qubits, only show non-zero
+  const showAll = qState.dim <= 8;
+  for (let i = 0; i < qState.dim; i++) {
+    if (!showAll && probs[i] < 1e-6) continue;
+    const pct = (probs[i] * 100).toFixed(1);
+    const colorIdx = i % 4;
+    const colors = ['#6c5ce7','#00cec9','#fd79a8','#ffeaa7'];
+    html += `<div class="prob-row">
+      <span class="prob-label">${basisLabel(i, n)}</span>
+      <div class="prob-bar-wrap"><div class="prob-bar-fill" style="width:${pct}%;background:${colors[colorIdx]}"></div></div>
+      <span class="prob-val">${pct}%</span>
+    </div>`;
+  }
+  el.innerHTML = html;
+}
 
-  animFrom = fromBloch;
-  animTo = toBloch;
+function updateDensityMatrix(q) {
+  const rho = qState.getReducedDensity(q);
+  const el = document.getElementById('density-matrix');
+  const labels = ['0','1'];
+  let html = '';
+  for (let r = 0; r < 2; r++) {
+    for (let c = 0; c < 2; c++) {
+      const val = rho[r*2+c];
+      const isDiag = r === c;
+      html += `<div class="density-cell${isDiag ? ' diag' : ''}">${formatComplex(val)}</div>`;
+    }
+  }
+  el.innerHTML = html;
+}
+
+// ============================================================
+// GATE APPLICATION WITH ANIMATION
+// ============================================================
+function applyGateAnimated(gate, label, qubit) {
+  if (qubit === undefined) qubit = activeQubit;
+  // Capture before state for ALL qubits
+  animFrom = {};
+  for (let i = 0; i < qState.n; i++) animFrom[i] = qState.getBloch(i);
+
+  qState.applySingleGate(gate, qubit, label);
+
+  animTo = {};
+  for (let i = 0; i < qState.n; i++) animTo[i] = qState.getBloch(i);
   animStart = performance.now();
   animating = true;
+
+  if (quizActive) quizGateCount++;
 }
 
-// Gate button listeners
-document.querySelectorAll('.gate-btn').forEach(btn => {
+function applyTwoQubitGateAnimated(gate, q1, q2, label) {
+  animFrom = {};
+  for (let i = 0; i < qState.n; i++) animFrom[i] = qState.getBloch(i);
+
+  qState.applyTwoQubitGate(gate, q1, q2, label);
+
+  animTo = {};
+  for (let i = 0; i < qState.n; i++) animTo[i] = qState.getBloch(i);
+  animStart = performance.now();
+  animating = true;
+
+  if (quizActive) quizGateCount++;
+}
+
+// ============================================================
+// EVENT LISTENERS
+// ============================================================
+
+// Single-qubit gate buttons
+document.querySelectorAll('.gate-btn[data-gate]').forEach(btn => {
   btn.addEventListener('click', () => {
     const gateName = btn.dataset.gate;
     if (GATES[gateName]) {
@@ -1084,10 +1798,23 @@ document.querySelectorAll('.gate-btn').forEach(btn => {
   });
 });
 
+// Entangling gate buttons
+document.querySelectorAll('.gate-btn[data-egate]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const gateName = btn.dataset.egate;
+    if (qState.n < 2) return;
+    const q1 = parseInt(document.getElementById('ctrl-qubit').value);
+    const q2 = parseInt(document.getElementById('tgt-qubit').value);
+    if (q1 === q2) return;
+    if (GATES2[gateName]) {
+      applyTwoQubitGateAnimated(GATES2[gateName], q1, q2, gateName);
+    }
+  });
+});
+
 // Rn custom axis toggle
 document.querySelector('[data-gate="Rn"]').addEventListener('click', () => {
-  const el = document.getElementById('custom-axis');
-  el.style.display = el.style.display === 'none' ? 'block' : 'block';
+  document.getElementById('custom-axis').style.display = 'block';
 });
 
 // Rotation angle display
@@ -1095,7 +1822,7 @@ rotAngle.addEventListener('input', () => {
   rotAngleVal.textContent = formatAngle(parseFloat(rotAngle.value));
 });
 
-// Custom axis value displays
+// Custom axis values
 ['nx','ny','nz'].forEach(id => {
   const el = document.getElementById('axis-' + id);
   const val = document.getElementById(id + '-val');
@@ -1104,118 +1831,760 @@ rotAngle.addEventListener('input', () => {
 
 // Undo / Reset / Random
 document.getElementById('btn-undo').addEventListener('click', () => {
-  const q = qubits[activeQubit];
-  const fromBloch = q.getBloch();
-  q.undo();
-  const toBloch = q.getBloch();
-  animFrom = fromBloch; animTo = toBloch;
+  animFrom = {};
+  for (let i = 0; i < qState.n; i++) animFrom[i] = qState.getBloch(i);
+  qState.undo();
+  animTo = {};
+  for (let i = 0; i < qState.n; i++) animTo[i] = qState.getBloch(i);
   animStart = performance.now(); animating = true;
 });
 
 document.getElementById('btn-reset').addEventListener('click', () => {
-  const q = qubits[activeQubit];
-  const fromBloch = q.getBloch();
-  q.reset();
-  animFrom = fromBloch; animTo = { x:0, y:0, z:1 };
+  animFrom = {};
+  for (let i = 0; i < qState.n; i++) animFrom[i] = qState.getBloch(i);
+  qState.reset();
+  trails = {};
+  for (let i = 0; i < qState.n; i++) trails[i] = [];
+  animTo = {};
+  for (let i = 0; i < qState.n; i++) animTo[i] = qState.getBloch(i);
   animStart = performance.now(); animating = true;
   measureResult.textContent = '';
 });
 
 document.getElementById('btn-random').addEventListener('click', () => {
-  // Random state via random unitary
-  const theta = Math.random() * Math.PI;
-  const phi = Math.random() * 2 * Math.PI;
-  const lambda = Math.random() * 2 * Math.PI;
-  const q = qubits[activeQubit];
-  const fromBloch = q.getBloch();
-  q.state = [
-    C(Math.cos(theta/2)),
-    C(Math.cos(phi + lambda) * Math.sin(theta/2), Math.sin(phi + lambda) * Math.sin(theta/2))
-  ];
-  q.normalize();
-  q.history.push('Random');
-  q.stateHistory.push([...q.state]);
-  const toBloch = q.getBloch();
-  animFrom = fromBloch; animTo = toBloch;
+  animFrom = {};
+  for (let i = 0; i < qState.n; i++) animFrom[i] = qState.getBloch(i);
+  // Generate random state
+  let norm = 0;
+  for (let i = 0; i < qState.dim; i++) {
+    const re = (Math.random() - 0.5) * 2;
+    const im = (Math.random() - 0.5) * 2;
+    qState.amps[i] = C(re, im);
+    norm += re*re + im*im;
+  }
+  norm = Math.sqrt(norm);
+  for (let i = 0; i < qState.dim; i++) qState.amps[i] = qState.amps[i].scale(1/norm);
+  qState.history.push({ gate: 'Random', qubits: Array.from({length:qState.n},(_,i)=>i), type: 'special' });
+  qState.stateHistory.push(qState.copyAmps());
+  animTo = {};
+  for (let i = 0; i < qState.n; i++) animTo[i] = qState.getBloch(i);
   animStart = performance.now(); animating = true;
 });
 
 // Measurement
-document.getElementById('btn-measure-z').addEventListener('click', () => {
-  const q = qubits[activeQubit];
-  const fromBloch = q.getBloch();
-  const res = q.measure('z');
-  const toBloch = q.getBloch();
-  animFrom = fromBloch; animTo = toBloch;
-  animStart = performance.now(); animating = true;
-  measureResult.textContent = `Collapsed to ${res.label} (p=${res.prob.toFixed(4)})`;
-});
-document.getElementById('btn-measure-x').addEventListener('click', () => {
-  const q = qubits[activeQubit];
-  const fromBloch = q.getBloch();
-  const res = q.measure('x');
-  const toBloch = q.getBloch();
-  animFrom = fromBloch; animTo = toBloch;
-  animStart = performance.now(); animating = true;
-  measureResult.textContent = `Collapsed to ${res.label} (p=${res.prob.toFixed(4)})`;
-});
-document.getElementById('btn-measure-y').addEventListener('click', () => {
-  const q = qubits[activeQubit];
-  const fromBloch = q.getBloch();
-  const res = q.measure('y');
-  const toBloch = q.getBloch();
-  animFrom = fromBloch; animTo = toBloch;
-  animStart = performance.now(); animating = true;
-  measureResult.textContent = `Collapsed to ${res.label} (p=${res.prob.toFixed(4)})`;
+['z','x','y'].forEach(basis => {
+  document.getElementById(`btn-measure-${basis}`).addEventListener('click', () => {
+    animFrom = {};
+    for (let i = 0; i < qState.n; i++) animFrom[i] = qState.getBloch(i);
+    const res = qState.measureQubit(activeQubit, basis);
+    animTo = {};
+    for (let i = 0; i < qState.n; i++) animTo[i] = qState.getBloch(i);
+    animStart = performance.now(); animating = true;
+    measureResult.textContent = `q${'\u2080\u2081\u2082\u2083'[activeQubit]} collapsed to ${res.label} (p=${res.prob.toFixed(4)})`;
+  });
 });
 
-// Multi-qubit
+// Multi-qubit management
 function updateQubitTabs() {
   const tabs = document.getElementById('qubit-tabs');
   const addBtn = document.getElementById('add-qubit');
   tabs.querySelectorAll('.qubit-tab').forEach(t => t.remove());
-  qubits.forEach((q, i) => {
+  const sub = ['\u2080','\u2081','\u2082','\u2083'];
+  for (let i = 0; i < qState.n; i++) {
     const btn = document.createElement('button');
     btn.className = 'qubit-tab' + (i === activeQubit ? ' active' : '');
-    btn.dataset.idx = i;
-    btn.textContent = `q\u2080\u2081\u2082\u2083`[2+i] ? `q${'\u2080\u2081\u2082\u2083'[i]}` : `q${i}`;
-    // Use subscript digits
-    const sub = ['₀','₁','₂','₃'];
     btn.textContent = `q${sub[i]}`;
-    btn.addEventListener('click', () => {
-      activeQubit = i;
-      updateQubitTabs();
-      measureResult.textContent = '';
-    });
+    btn.addEventListener('click', () => { activeQubit = i; updateQubitTabs(); measureResult.textContent = ''; });
     tabs.insertBefore(btn, addBtn);
+  }
+  addBtn.style.display = qState.n >= 4 ? 'none' : '';
+  updateEntanglingSelectors();
+}
+
+function updateEntanglingSelectors() {
+  const sub = ['\u2080','\u2081','\u2082','\u2083'];
+  ['ctrl-qubit','tgt-qubit'].forEach((id, idx) => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '';
+    for (let i = 0; i < qState.n; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `q${sub[i]}`;
+      if (idx === 0 && i === 0) opt.selected = true;
+      if (idx === 1 && i === 1) opt.selected = true;
+      sel.appendChild(opt);
+    }
   });
-  addBtn.style.display = qubits.length >= 4 ? 'none' : '';
+  // Disable entangling section if < 2 qubits
+  const ent = document.getElementById('entangling-section');
+  ent.style.opacity = qState.n < 2 ? '0.3' : '1';
 }
 
 document.getElementById('add-qubit').addEventListener('click', () => {
-  if (qubits.length < 4) {
-    qubits.push(new Qubit(qubits.length));
-    activeQubit = qubits.length - 1;
+  if (qState.n < 4) {
+    qState.addQubit();
+    trails[qState.n - 1] = [];
+    activeQubit = qState.n - 1;
     updateQubitTabs();
   }
 });
 
 updateQubitTabs();
 
+// Trail toggle
+document.getElementById('trail-toggle').addEventListener('change', e => {
+  trailEnabled = e.target.checked;
+});
+
+// Fidelity target change
+document.getElementById('fidelity-target').addEventListener('change', () => {});
+
+// ============================================================
+// CIRCUIT DIAGRAM
+// ============================================================
+function drawCircuitDiagram() {
+  const cvs = document.getElementById('circuit-canvas');
+  const ctx = cvs.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  cvs.width = cvs.clientWidth * dpr;
+  cvs.height = cvs.clientHeight * dpr;
+  ctx.scale(dpr, dpr);
+  const W = cvs.clientWidth, H = cvs.clientHeight;
+
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.fillRect(0, 0, W, H);
+
+  const n = qState.n;
+  const margin = 20;
+  const wireSpacing = Math.min(25, (H - margin * 2) / Math.max(n, 1));
+  const gateWidth = 28;
+  const gateSpacing = 6;
+  const startX = 40;
+
+  // Draw wires
+  ctx.strokeStyle = '#3a3a5a';
+  ctx.lineWidth = 1;
+  const sub = ['\u2080','\u2081','\u2082','\u2083'];
+  for (let i = 0; i < n; i++) {
+    const y = margin + i * wireSpacing + wireSpacing / 2;
+    ctx.beginPath();
+    ctx.moveTo(startX, y);
+    ctx.lineTo(W - 10, y);
+    ctx.stroke();
+    ctx.fillStyle = '#8888aa';
+    ctx.font = '10px "Courier New", monospace';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`q${sub[i]}`, startX - 5, y);
+  }
+
+  // Draw gates
+  let x = startX + 10;
+  const hist = qState.history;
+  for (let gi = 0; gi < hist.length && x < W - 30; gi++) {
+    const h = hist[gi];
+    if (h.type === 'single' || h.type === 'measure') {
+      const qIdx = h.qubits[0];
+      const y = margin + qIdx * wireSpacing + wireSpacing / 2;
+      ctx.fillStyle = h.type === 'measure' ? '#fd79a8' : '#2a2a4e';
+      ctx.strokeStyle = h.type === 'measure' ? '#fd79a8' : '#6c5ce7';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(x, y - 10, gateWidth, 20, 3);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#e0e0e8';
+      ctx.font = '9px "Courier New", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      let label = h.gate;
+      if (label.length > 4) label = label.substring(0, 4);
+      ctx.fillText(label, x + gateWidth/2, y);
+    } else if (h.type === 'two') {
+      const q1 = h.qubits[0], q2 = h.qubits[1];
+      const y1 = margin + q1 * wireSpacing + wireSpacing / 2;
+      const y2 = margin + q2 * wireSpacing + wireSpacing / 2;
+      // Vertical line
+      ctx.strokeStyle = '#55efc4';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x + gateWidth/2, y1);
+      ctx.lineTo(x + gateWidth/2, y2);
+      ctx.stroke();
+      // Control dot
+      ctx.fillStyle = '#55efc4';
+      ctx.beginPath();
+      ctx.arc(x + gateWidth/2, y1, 4, 0, Math.PI*2);
+      ctx.fill();
+      // Target gate
+      ctx.fillStyle = '#1a2e1a';
+      ctx.strokeStyle = '#55efc4';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(x, y2 - 10, gateWidth, 20, 3);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#55efc4';
+      ctx.font = '9px "Courier New", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(h.gate, x + gateWidth/2, y2);
+    }
+    x += gateWidth + gateSpacing;
+  }
+}
+
+// Update circuit periodically
+setInterval(drawCircuitDiagram, 200);
+
+// ============================================================
+// MEASUREMENT HISTOGRAM
+// ============================================================
+let histogramData = null;
+let histogramShots = 0;
+
+function drawHistogram() {
+  const cvs = document.getElementById('histogram-canvas');
+  const ctx = cvs.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  cvs.width = cvs.clientWidth * dpr;
+  cvs.height = cvs.clientHeight * dpr;
+  ctx.scale(dpr, dpr);
+  const W = cvs.clientWidth, H = cvs.clientHeight;
+
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.fillRect(0, 0, W, H);
+
+  if (!histogramData) {
+    ctx.fillStyle = '#555';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Click "Run" to simulate measurements', W/2, H/2);
+    return;
+  }
+
+  const n = qState.n;
+  const maxCount = Math.max(...histogramData, 1);
+  const barPadding = 2;
+  const labelH = 18;
+  const barAreaH = H - labelH - 10;
+  const barW = Math.max(4, (W - 20) / histogramData.length - barPadding);
+  const colors = ['#6c5ce7','#00cec9','#fd79a8','#ffeaa7','#55efc4','#74b9ff','#ff7675','#a29bfe'];
+
+  for (let i = 0; i < histogramData.length; i++) {
+    const x = 10 + i * (barW + barPadding);
+    const count = histogramData[i];
+    const barH = (count / maxCount) * barAreaH;
+    const y = 5 + barAreaH - barH;
+
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.fillRect(x, y, barW, barH);
+
+    // Label
+    if (barW > 8) {
+      ctx.fillStyle = '#8888aa';
+      ctx.font = `${Math.min(9, barW - 2)}px "Courier New", monospace`;
+      ctx.textAlign = 'center';
+      ctx.save();
+      ctx.translate(x + barW/2, H - 2);
+      ctx.fillText(basisLabel(i, n), 0, 0);
+      ctx.restore();
+    }
+
+    // Count on top
+    if (count > 0 && barW > 10) {
+      ctx.fillStyle = '#ddd';
+      ctx.font = '8px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(count, x + barW/2, y - 2);
+    }
+  }
+}
+
+document.getElementById('btn-run-hist').addEventListener('click', () => {
+  const shots = parseInt(document.getElementById('hist-shots').value) || 1024;
+  histogramData = qState.simulateMeasurements(shots);
+  histogramShots = shots;
+  drawHistogram();
+});
+
+setInterval(drawHistogram, 500);
+
+// ============================================================
+// OPENQASM EXPORT
+// ============================================================
+function generateQASM() {
+  const n = qState.n;
+  let qasm = 'OPENQASM 2.0;\ninclude "qelib1.inc";\n\n';
+  qasm += `qreg q[${n}];\ncreg c[${n}];\n\n`;
+
+  for (const h of qState.history) {
+    const g = h.gate;
+    if (h.type === 'single') {
+      const q = h.qubits[0];
+      const gateMap = {
+        'X': 'x', 'Y': 'y', 'Z': 'z', 'H': 'h',
+        'S': 's', 'Sd': 'sdg', 'T': 't', 'Td': 'tdg',
+      };
+      if (gateMap[g]) {
+        qasm += `${gateMap[g]} q[${q}];\n`;
+      } else if (g.startsWith('Rx(')) {
+        const angle = g.match(/\((.+)\)/)[1];
+        qasm += `rx(${angle}) q[${q}];\n`;
+      } else if (g.startsWith('Ry(')) {
+        const angle = g.match(/\((.+)\)/)[1];
+        qasm += `ry(${angle}) q[${q}];\n`;
+      } else if (g.startsWith('Rz(')) {
+        const angle = g.match(/\((.+)\)/)[1];
+        qasm += `rz(${angle}) q[${q}];\n`;
+      } else if (g.startsWith('Rn(')) {
+        qasm += `// Custom rotation: ${g} on q[${q}]\n`;
+      }
+    } else if (h.type === 'two') {
+      const [q1, q2] = h.qubits;
+      const gateMap2 = { 'CNOT': 'cx', 'CZ': 'cz', 'SWAP': 'swap', 'CH': 'ch' };
+      if (gateMap2[g]) {
+        qasm += `${gateMap2[g]} q[${q1}], q[${q2}];\n`;
+      }
+    } else if (h.type === 'measure') {
+      qasm += `measure q[${h.qubits[0]}] -> c[${h.qubits[0]}];\n`;
+    }
+  }
+  return qasm;
+}
+
+document.getElementById('btn-qasm').addEventListener('click', () => {
+  document.getElementById('qasm-output').textContent = generateQASM();
+  document.getElementById('qasm-modal').classList.add('visible');
+});
+document.getElementById('qasm-close').addEventListener('click', () => {
+  document.getElementById('qasm-modal').classList.remove('visible');
+});
+document.getElementById('btn-copy-qasm').addEventListener('click', () => {
+  navigator.clipboard.writeText(generateQASM()).then(() => {
+    document.getElementById('btn-copy-qasm').textContent = 'Copied!';
+    setTimeout(() => document.getElementById('btn-copy-qasm').textContent = 'Copy to Clipboard', 1500);
+  });
+});
+
+// ============================================================
+// RECIPES
+// ============================================================
+const RECIPES = [
+  {
+    name: 'Bell State (\u03A6\u207A)',
+    desc: 'Create a maximally entangled Bell state |00\u27E9 + |11\u27E9 using H and CNOT.',
+    minQubits: 2,
+    steps: [
+      { type: 'single', gate: 'H', qubit: 0 },
+      { type: 'two', gate: 'CNOT', q1: 0, q2: 1 },
+    ]
+  },
+  {
+    name: 'Bell State (\u03A8\u207A)',
+    desc: 'Create |01\u27E9 + |10\u27E9 using X, H, and CNOT.',
+    minQubits: 2,
+    steps: [
+      { type: 'single', gate: 'X', qubit: 0 },
+      { type: 'single', gate: 'H', qubit: 0 },
+      { type: 'two', gate: 'CNOT', q1: 0, q2: 1 },
+    ]
+  },
+  {
+    name: 'GHZ State (3 qubits)',
+    desc: 'Greenberger-Horne-Zeilinger state: |000\u27E9 + |111\u27E9.',
+    minQubits: 3,
+    steps: [
+      { type: 'single', gate: 'H', qubit: 0 },
+      { type: 'two', gate: 'CNOT', q1: 0, q2: 1 },
+      { type: 'two', gate: 'CNOT', q1: 0, q2: 2 },
+    ]
+  },
+  {
+    name: 'Uniform Superposition',
+    desc: 'Put all qubits into equal superposition using Hadamard gates.',
+    minQubits: 1,
+    steps: 'hadamard_all'
+  },
+  {
+    name: 'Quantum Teleportation Setup',
+    desc: 'Prepare the entangled channel for quantum teleportation (3 qubits).',
+    minQubits: 3,
+    steps: [
+      { type: 'single', gate: 'H', qubit: 0 },  // state to teleport
+      { type: 'single', gate: 'H', qubit: 1 },
+      { type: 'two', gate: 'CNOT', q1: 1, q2: 2 },
+    ]
+  },
+  {
+    name: 'SWAP Test',
+    desc: 'A circuit that compares two quantum states (3 qubits).',
+    minQubits: 3,
+    steps: [
+      { type: 'single', gate: 'H', qubit: 0 },
+      { type: 'two', gate: 'SWAP', q1: 1, q2: 2 },  // controlled-SWAP simplified
+      { type: 'single', gate: 'H', qubit: 0 },
+    ]
+  },
+  {
+    name: 'Phase Kickback',
+    desc: 'Demonstrate phase kickback: apply CNOT with target in |\u2212\u27E9.',
+    minQubits: 2,
+    steps: [
+      { type: 'single', gate: 'X', qubit: 1 },
+      { type: 'single', gate: 'H', qubit: 1 },
+      { type: 'single', gate: 'H', qubit: 0 },
+      { type: 'two', gate: 'CNOT', q1: 0, q2: 1 },
+      { type: 'single', gate: 'H', qubit: 0 },
+    ]
+  },
+];
+
+function runRecipe(recipe) {
+  // Ensure enough qubits
+  while (qState.n < recipe.minQubits) {
+    qState.addQubit();
+    trails[qState.n - 1] = [];
+  }
+  qState.reset();
+  trails = {};
+  for (let i = 0; i < qState.n; i++) trails[i] = [];
+  updateQubitTabs();
+
+  let steps = recipe.steps;
+  if (steps === 'hadamard_all') {
+    steps = [];
+    for (let i = 0; i < qState.n; i++) steps.push({ type: 'single', gate: 'H', qubit: i });
+  }
+
+  // Apply steps with delay for animation
+  let delay = 100;
+  steps.forEach((step, idx) => {
+    setTimeout(() => {
+      if (step.type === 'single') {
+        applyGateAnimated(GATES[step.gate], step.gate, step.qubit);
+      } else if (step.type === 'two') {
+        applyTwoQubitGateAnimated(GATES2[step.gate], step.q1, step.q2, step.gate);
+      }
+    }, delay * (idx + 1));
+  });
+
+  document.getElementById('recipe-modal').classList.remove('visible');
+}
+
+document.getElementById('btn-recipes').addEventListener('click', () => {
+  const list = document.getElementById('recipe-list');
+  list.innerHTML = '';
+  RECIPES.forEach(r => {
+    const el = document.createElement('div');
+    el.className = 'recipe-item';
+    el.innerHTML = `<div class="recipe-name">${r.name}</div><div class="recipe-desc">${r.desc}</div>`;
+    el.addEventListener('click', () => runRecipe(r));
+    list.appendChild(el);
+  });
+  document.getElementById('recipe-modal').classList.add('visible');
+});
+document.getElementById('recipe-close').addEventListener('click', () => {
+  document.getElementById('recipe-modal').classList.remove('visible');
+});
+
+// ============================================================
+// QUIZ MODE
+// ============================================================
+const QUIZ_CHALLENGES = [
+  { label: '|1\u27E9', target: [ZERO, ONE], hint: 'Flip the qubit from |0\u27E9 to |1\u27E9' },
+  { label: '|+\u27E9', target: [SQRT2_INV, SQRT2_INV], hint: 'Create equal superposition with positive phases' },
+  { label: '|\u2212\u27E9', target: [SQRT2_INV, SQRT2_INV.scale(-1)], hint: 'Create equal superposition with negative phase on |1\u27E9' },
+  { label: '|+i\u27E9', target: [SQRT2_INV, C(0, 1/Math.sqrt(2))], hint: 'Create superposition on the Y-axis of the Bloch sphere' },
+  { label: '|\u2212i\u27E9', target: [SQRT2_INV, C(0, -1/Math.sqrt(2))], hint: 'Opposite of |+i\u27E9 on the Bloch sphere' },
+  { label: '|0\u27E9 (from |+\u27E9)', target: [ONE, ZERO], startGates: ['H'], hint: 'Starting from |+\u27E9, get back to |0\u27E9' },
+];
+
+let currentChallenge = null;
+
+function startQuiz() {
+  // Reset to single qubit
+  qState = new QuantumState(1);
+  trails = { 0: [] };
+  activeQubit = 0;
+  updateQubitTabs();
+
+  currentChallenge = QUIZ_CHALLENGES[Math.floor(Math.random() * QUIZ_CHALLENGES.length)];
+  quizActive = true;
+  quizGateCount = 0;
+
+  // Apply starting gates if any
+  if (currentChallenge.startGates) {
+    currentChallenge.startGates.forEach(g => {
+      qState.applySingleGate(GATES[g], 0, g);
+    });
+  }
+
+  const content = document.getElementById('quiz-content');
+  content.innerHTML = `
+    <p style="color:var(--dim);font-size:13px;">Apply gates to reach the target state. Use as few gates as possible!</p>
+    <div class="quiz-target">
+      Target: ${currentChallenge.label}<br>
+      <span style="font-size:11px;color:var(--dim)">${currentChallenge.hint}</span>
+    </div>
+    <div class="quiz-score" id="quiz-score">Fidelity: 0.000 | Gates used: 0</div>
+    <div class="action-row" style="margin-top:12px;">
+      <button class="action-btn" id="quiz-new">New Challenge</button>
+      <button class="action-btn" id="quiz-stop">End Quiz</button>
+    </div>
+  `;
+
+  document.getElementById('quiz-new').addEventListener('click', startQuiz);
+  document.getElementById('quiz-stop').addEventListener('click', () => {
+    quizActive = false;
+    document.getElementById('quiz-modal').classList.remove('visible');
+  });
+
+  document.getElementById('quiz-modal').classList.add('visible');
+}
+
+function updateQuizScore() {
+  if (!currentChallenge || !quizActive) return;
+  const fid = qState.fidelityTo(0, currentChallenge.target);
+  const el = document.getElementById('quiz-score');
+  if (el) {
+    const won = fid > 0.999;
+    el.innerHTML = won ?
+      `<span style="color:var(--success)">SUCCESS! Fidelity: ${fid.toFixed(4)} | Gates: ${quizGateCount}</span>` :
+      `Fidelity: ${fid.toFixed(4)} | Gates used: ${quizGateCount}`;
+  }
+}
+
+document.getElementById('btn-quiz').addEventListener('click', startQuiz);
+document.getElementById('quiz-close').addEventListener('click', () => {
+  quizActive = false;
+  document.getElementById('quiz-modal').classList.remove('visible');
+});
+
+// ============================================================
+// TUTORIAL
+// ============================================================
+const TUTORIAL_STEPS = [
+  {
+    step: 'Welcome',
+    text: 'Welcome to the <span class="highlight">Bloch Sphere Playground</span>! This tool visualizes quantum states as points on a sphere. The north pole is |0\u27E9 and the south pole is |1\u27E9.'
+  },
+  {
+    step: 'The Bloch Sphere',
+    text: 'The sphere on the left represents your qubit. <span class="highlight">Drag</span> to rotate the view, and <span class="highlight">scroll</span> to zoom. The colored arrow shows your quantum state.'
+  },
+  {
+    step: 'Applying Gates',
+    text: 'Click any gate button (like <span class="highlight">H</span> for Hadamard) to apply it. Watch how the state vector moves on the sphere! The <span class="highlight">X, Y, Z</span> gates rotate the state by \u03C0 around their respective axes.'
+  },
+  {
+    step: 'Superposition',
+    text: 'Try clicking <span class="highlight">H</span> (Hadamard). This puts the qubit in an equal superposition: |0\u27E9 \u2192 |+\u27E9. The state vector moves to the equator, meaning 50/50 chance of measuring 0 or 1.'
+  },
+  {
+    step: 'Rotation Gates',
+    text: 'Use the <span class="highlight">\u03B8 slider</span> to set an angle, then click R\u2093, R\u1D67, or R\u1D69 for continuous rotations. This gives you fine-grained control over the quantum state.'
+  },
+  {
+    step: 'Measurement',
+    text: 'Click <span class="highlight">Measure Z</span> to collapse the qubit. The state jumps to |0\u27E9 or |1\u27E9 probabilistically. Run the <span class="highlight">histogram</span> to see measurement statistics over many shots.'
+  },
+  {
+    step: 'Multi-Qubit & Entanglement',
+    text: 'Click <span class="highlight">+</span> to add qubits. With 2+ qubits, you can use entangling gates like <span class="highlight">CNOT</span>. Try the "Bell State" recipe to create entanglement!'
+  },
+  {
+    step: 'Explore More',
+    text: 'Check out <span class="highlight">Recipes</span> for pre-built circuits, <span class="highlight">Quiz</span> to test your skills, and <span class="highlight">QASM</span> to export your circuit. Have fun exploring quantum computing!'
+  },
+];
+
+let tutorialStep = 0;
+
+function showTutorialStep() {
+  const bar = document.getElementById('tutorial-bar');
+  if (tutorialStep < 0 || tutorialStep >= TUTORIAL_STEPS.length) {
+    bar.classList.remove('visible');
+    return;
+  }
+  bar.classList.add('visible');
+  const s = TUTORIAL_STEPS[tutorialStep];
+  document.getElementById('tutorial-step').textContent = `Step ${tutorialStep + 1} of ${TUTORIAL_STEPS.length}: ${s.step}`;
+  document.getElementById('tutorial-text').innerHTML = s.text;
+  document.getElementById('tutorial-prev').style.display = tutorialStep === 0 ? 'none' : '';
+  document.getElementById('tutorial-next').textContent = tutorialStep === TUTORIAL_STEPS.length - 1 ? 'Finish' : 'Next';
+}
+
+document.getElementById('btn-tutorial').addEventListener('click', () => {
+  tutorialStep = 0;
+  showTutorialStep();
+});
+document.getElementById('tutorial-next').addEventListener('click', () => {
+  tutorialStep++;
+  if (tutorialStep >= TUTORIAL_STEPS.length) {
+    document.getElementById('tutorial-bar').classList.remove('visible');
+  } else {
+    showTutorialStep();
+  }
+});
+document.getElementById('tutorial-prev').addEventListener('click', () => {
+  tutorialStep = Math.max(0, tutorialStep - 1);
+  showTutorialStep();
+});
+document.getElementById('tutorial-close').addEventListener('click', () => {
+  document.getElementById('tutorial-bar').classList.remove('visible');
+});
+
+// ============================================================
+// SAVE / LOAD / SHARE
+// ============================================================
+function getStateData() {
+  return {
+    n: qState.n,
+    amps: qState.amps.map(a => [a.re, a.im]),
+    history: qState.history,
+    activeQubit,
+  };
+}
+
+function loadStateData(data) {
+  qState = new QuantumState(data.n);
+  qState.amps = data.amps.map(([re, im]) => C(re, im));
+  qState.history = data.history || [];
+  qState.stateHistory = [qState.copyAmps()];
+  activeQubit = data.activeQubit || 0;
+  trails = {};
+  for (let i = 0; i < qState.n; i++) trails[i] = [];
+  updateQubitTabs();
+}
+
+document.getElementById('btn-save').addEventListener('click', () => {
+  const data = JSON.stringify(getStateData());
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'bloch-state.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('btn-load').addEventListener('click', () => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.addEventListener('change', () => {
+    const file = input.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          loadStateData(data);
+        } catch(e) { alert('Invalid file'); }
+      };
+      reader.readAsText(file);
+    }
+  });
+  input.click();
+});
+
+document.getElementById('btn-share').addEventListener('click', () => {
+  const data = getStateData();
+  const encoded = btoa(JSON.stringify(data));
+  const url = window.location.href.split('?')[0].split('#')[0] + '#state=' + encoded;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById('btn-share');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Share', 1500);
+  });
+});
+
+// Load from URL hash
+function loadFromHash() {
+  const hash = window.location.hash;
+  if (hash.startsWith('#state=')) {
+    try {
+      const data = JSON.parse(atob(hash.substring(7)));
+      loadStateData(data);
+    } catch(e) {}
+  }
+}
+loadFromHash();
+
+// ============================================================
+// KEYBOARD SHORTCUTS
+// ============================================================
+const SHORTCUTS = [
+  { key: 'X', desc: 'Apply Pauli-X gate' },
+  { key: 'Y', desc: 'Apply Pauli-Y gate' },
+  { key: 'Z', desc: 'Apply Pauli-Z gate' },
+  { key: 'H', desc: 'Apply Hadamard gate' },
+  { key: 'S', desc: 'Apply S gate' },
+  { key: 'T', desc: 'Apply T gate' },
+  { key: 'M', desc: 'Measure in Z basis' },
+  { key: 'U / Ctrl+Z', desc: 'Undo last gate' },
+  { key: 'R', desc: 'Reset state' },
+  { key: '1-4', desc: 'Select qubit' },
+  { key: 'N', desc: 'Add qubit' },
+  { key: '?', desc: 'Show shortcuts' },
+];
+
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  const key = e.key.toLowerCase();
+  if (key === 'x') applyGateAnimated(GATES.X, 'X');
+  else if (key === 'y') applyGateAnimated(GATES.Y, 'Y');
+  else if (key === 'z') applyGateAnimated(GATES.Z, 'Z');
+  else if (key === 'h') applyGateAnimated(GATES.H, 'H');
+  else if (key === 's') applyGateAnimated(GATES.S, 'S');
+  else if (key === 't') applyGateAnimated(GATES.T, 'T');
+  else if (key === 'm') document.getElementById('btn-measure-z').click();
+  else if (key === 'u' || (e.ctrlKey && key === 'z')) { e.preventDefault(); document.getElementById('btn-undo').click(); }
+  else if (key === 'r' && !e.ctrlKey) document.getElementById('btn-reset').click();
+  else if (key === 'n') document.getElementById('add-qubit').click();
+  else if (key >= '1' && key <= '4') {
+    const idx = parseInt(key) - 1;
+    if (idx < qState.n) { activeQubit = idx; updateQubitTabs(); }
+  }
+  else if (key === '?' || key === '/') {
+    document.getElementById('shortcuts-modal').classList.add('visible');
+  }
+  else if (key === 'escape') {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('visible'));
+    document.getElementById('tutorial-bar').classList.remove('visible');
+  }
+});
+
+// Populate shortcuts modal
+const shortcutsGrid = document.getElementById('shortcuts-grid');
+SHORTCUTS.forEach(s => {
+  shortcutsGrid.innerHTML += `<span class="shortcut-key">${s.key}</span><span class="shortcut-desc">${s.desc}</span>`;
+});
+
+document.getElementById('btn-shortcuts').addEventListener('click', () => {
+  document.getElementById('shortcuts-modal').classList.add('visible');
+});
+document.getElementById('shortcuts-close').addEventListener('click', () => {
+  document.getElementById('shortcuts-modal').classList.remove('visible');
+});
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('visible');
+  });
+});
+
 // ============================================================
 // MOUSE / TOUCH CONTROLS
 // ============================================================
-canvas.addEventListener('mousedown', e => {
-  dragging = true;
-  lastMouse = { x: e.clientX, y: e.clientY };
-});
+canvas.addEventListener('mousedown', e => { dragging = true; lastMouse = { x: e.clientX, y: e.clientY }; });
 window.addEventListener('mouseup', () => dragging = false);
 window.addEventListener('mousemove', e => {
   if (!dragging) return;
-  const dx = e.clientX - lastMouse.x;
-  const dy = e.clientY - lastMouse.y;
-  camPhi -= dx * 0.008;
-  camTheta = Math.max(0.1, Math.min(Math.PI - 0.1, camTheta + dy * 0.008));
+  camPhi -= (e.clientX - lastMouse.x) * 0.008;
+  camTheta = Math.max(0.1, Math.min(Math.PI - 0.1, camTheta + (e.clientY - lastMouse.y) * 0.008));
   lastMouse = { x: e.clientX, y: e.clientY };
 });
 canvas.addEventListener('wheel', e => {
@@ -1223,77 +2592,56 @@ canvas.addEventListener('wheel', e => {
   camDist = Math.max(2, Math.min(8, camDist + e.deltaY * 0.005));
 }, { passive: false });
 
-// Touch support
 canvas.addEventListener('touchstart', e => {
-  if (e.touches.length === 1) {
-    dragging = true;
-    lastMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-  }
+  if (e.touches.length === 1) { dragging = true; lastMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }
 });
 canvas.addEventListener('touchmove', e => {
   if (dragging && e.touches.length === 1) {
     e.preventDefault();
-    const dx = e.touches[0].clientX - lastMouse.x;
-    const dy = e.touches[0].clientY - lastMouse.y;
-    camPhi -= dx * 0.008;
-    camTheta = Math.max(0.1, Math.min(Math.PI - 0.1, camTheta + dy * 0.008));
+    camPhi -= (e.touches[0].clientX - lastMouse.x) * 0.008;
+    camTheta = Math.max(0.1, Math.min(Math.PI - 0.1, camTheta + (e.touches[0].clientY - lastMouse.y) * 0.008));
     lastMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
   }
 }, { passive: false });
 canvas.addEventListener('touchend', () => dragging = false);
 
-// Gate button tooltips
+// Gate tooltips
 const tooltip = document.getElementById('tooltip');
 const gateDescriptions = {
-  X: 'Pauli-X (NOT): Rotates state π around X-axis. |0⟩↔|1⟩',
-  Y: 'Pauli-Y: Rotates state π around Y-axis with phase.',
-  Z: 'Pauli-Z: Rotates state π around Z-axis. Phase flip.',
-  H: 'Hadamard: Creates equal superposition. |0⟩→|+⟩, |1⟩→|−⟩',
-  S: 'S gate: π/2 phase rotation around Z-axis. √Z.',
-  'S†': 'S-dagger: −π/2 phase rotation around Z-axis.',
-  T: 'T gate: π/4 phase rotation. √S.',
-  'T†': 'T-dagger: −π/4 phase rotation.',
-  Rx: 'Rotation about X-axis by angle θ.',
-  Ry: 'Rotation about Y-axis by angle θ.',
-  Rz: 'Rotation about Z-axis by angle θ.',
-  Rn: 'Rotation about custom axis (nₓ, nᵧ, nᵤ) by angle θ.',
+  X: 'Pauli-X (NOT): Rotates state \u03C0 around X-axis. |0\u27E9\u2194|1\u27E9',
+  Y: 'Pauli-Y: Rotates state \u03C0 around Y-axis with phase.',
+  Z: 'Pauli-Z: Rotates state \u03C0 around Z-axis. Phase flip.',
+  H: 'Hadamard: Creates equal superposition. |0\u27E9\u2192|+\u27E9',
+  S: 'S gate: \u03C0/2 phase rotation around Z. \u221AZ.',
+  Sd: 'S-dagger: -\u03C0/2 phase rotation around Z.',
+  T: 'T gate: \u03C0/4 phase rotation. \u221AS.',
+  Td: 'T-dagger: -\u03C0/4 phase rotation.',
+  Rx: 'Rotation about X-axis by angle \u03B8.',
+  Ry: 'Rotation about Y-axis by angle \u03B8.',
+  Rz: 'Rotation about Z-axis by angle \u03B8.',
+  Rn: 'Rotation about custom axis (n\u2093, n\u1D67, n\u1D69) by \u03B8.',
+  CNOT: 'Controlled-NOT: Flips target if control is |1\u27E9.',
+  CZ: 'Controlled-Z: Applies Z to target if control is |1\u27E9.',
+  SWAP: 'Swaps the states of two qubits.',
+  CH: 'Controlled-Hadamard: H on target if control is |1\u27E9.',
 };
 
 document.querySelectorAll('.gate-btn').forEach(btn => {
-  btn.addEventListener('mouseenter', e => {
-    const desc = gateDescriptions[btn.dataset.gate];
-    if (desc) {
-      tooltip.textContent = desc;
-      tooltip.classList.add('visible');
-    }
+  const gate = btn.dataset.gate || btn.dataset.egate;
+  btn.addEventListener('mouseenter', () => {
+    const desc = gateDescriptions[gate];
+    if (desc) { tooltip.textContent = desc; tooltip.classList.add('visible'); }
   });
   btn.addEventListener('mousemove', e => {
     tooltip.style.left = (e.clientX + 12) + 'px';
     tooltip.style.top = (e.clientY - 30) + 'px';
   });
-  btn.addEventListener('mouseleave', () => {
-    tooltip.classList.remove('visible');
-  });
+  btn.addEventListener('mouseleave', () => tooltip.classList.remove('visible'));
 });
 
-// Keyboard shortcuts
-document.addEventListener('keydown', e => {
-  const key = e.key.toLowerCase();
-  if (e.target.tagName === 'INPUT') return;
-  if (key === 'x') applyGateAnimated(GATES.X, 'X');
-  if (key === 'y') applyGateAnimated(GATES.Y, 'Y');
-  if (key === 'z') applyGateAnimated(GATES.Z, 'Z');
-  if (key === 'h') applyGateAnimated(GATES.H, 'H');
-  if (key === 's') applyGateAnimated(GATES.S, 'S');
-  if (key === 't') applyGateAnimated(GATES.T, 'T');
-  if (key === 'u' || (e.ctrlKey && key === 'z')) {
-    e.preventDefault();
-    document.getElementById('btn-undo').click();
-  }
-  if (key === 'r' && !e.ctrlKey) document.getElementById('btn-reset').click();
-});
-
-// Start
+// ============================================================
+// START
+// ============================================================
 render();
 </script>
 </body>
